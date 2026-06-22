@@ -3,33 +3,20 @@
  * =====================================================
  * FILE: config/firebase.php
  * FUNGSI: Koneksi ke Firebase via REST API
- * VERSION: 4.0 - REST API Only (Tanpa Composer)
+ * VERSION: 6.0 - No curl_close, No output
  * =====================================================
  */
-
-// ============================================
-// 🔥 KONFIGURASI FIREBASE
-// ============================================
-// 1. API Key: Firebase Console → Project Settings → Web API Key
-// 2. Database URL: Firebase Console → Realtime Database → URL
-// ============================================
 
 class FirebaseConfig {
     private static $auth = null;
     private static $database = null;
     
-    /**
-     * 🔥 Ganti dengan Web API Key dari Firebase Console
-     */
     public static function getApiKey() {
-        return 'AIzaSyAjVROuwHCfhUQDrA7Xek-CsyjsQpcFrHs'; // <-- GANTI!
+        return 'AIzaSyAjVROuwHCfhUQDrA7Xek-CsyjsQpcFrHs'; // Ganti!
     }
     
-    /**
-     * 🔥 Ganti dengan URL Database dari Firebase Console
-     */
     public static function getDatabaseUrl() {
-        return 'https://perizinan-db492-default-rtdb.asia-southeast1.firebasedatabase.app/'; // <-- GANTI!
+        return 'https://perizinan-db492-default-rtdb.asia-southeast1.firebasedatabase.app';
     }
 
     public static function getAuth() {
@@ -47,9 +34,6 @@ class FirebaseConfig {
     }
 }
 
-// ============================================
-// REST AUTH
-// ============================================
 class RestAuth {
     private $apiKey;
     
@@ -76,7 +60,7 @@ class RestAuth {
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         if ($httpCode === 200) {
             $result = json_decode($response);
@@ -84,8 +68,7 @@ class RestAuth {
                 'firebaseUserId' => $result->localId,
                 'uid' => $result->localId,
                 'idToken' => $result->idToken,
-                'email' => $result->email,
-                'displayName' => $result->displayName ?? ''
+                'email' => $result->email
             ];
         } else {
             $error = json_decode($response);
@@ -113,7 +96,7 @@ class RestAuth {
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         if ($httpCode === 200) {
             $result = json_decode($response);
@@ -131,9 +114,6 @@ class RestAuth {
     }
 }
 
-// ============================================
-// REST DATABASE
-// ============================================
 class RestDatabase {
     private $baseUrl;
     private $apiKey;
@@ -154,7 +134,6 @@ class RestReference {
     private $apiKey;
     private $orderBy = null;
     private $equalTo = null;
-    private $limitToFirst = null;
     
     public function __construct($baseUrl, $path, $apiKey) {
         $this->baseUrl = $baseUrl;
@@ -172,9 +151,6 @@ class RestReference {
         if ($this->equalTo !== null) {
             $params[] = 'equalTo="' . $this->equalTo . '"';
         }
-        if ($this->limitToFirst !== null) {
-            $params[] = 'limitToFirst=' . $this->limitToFirst;
-        }
         
         return $url . '?' . implode('&', $params);
     }
@@ -189,7 +165,7 @@ class RestReference {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         return json_decode($response, true);
     }
@@ -206,7 +182,7 @@ class RestReference {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         return json_decode($response, true);
     }
@@ -223,7 +199,7 @@ class RestReference {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         $result = json_decode($response, true);
         $key = $result['name'] ?? null;
@@ -245,7 +221,7 @@ class RestReference {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
-        curl_close($ch);
+        // ❌ HAPUS: curl_close($ch);
         
         return json_decode($response, true);
     }
@@ -260,11 +236,6 @@ class RestReference {
         return $this;
     }
     
-    public function limitToFirst($limit) {
-        $this->limitToFirst = $limit;
-        return $this;
-    }
-    
     public function getSnapshot() {
         $data = $this->getValue();
         return (object)[
@@ -275,23 +246,10 @@ class RestReference {
     }
 }
 
-// ============================================
-// TEST CONNECTION
-// ============================================
-if (basename($_SERVER['PHP_SELF']) === 'firebase.php') {
-    echo '<h1>Firebase REST API Test</h1>';
-    echo '<p>API Key: ' . substr(FirebaseConfig::getApiKey(), 0, 10) . '...</p>';
-    echo '<p>Database URL: ' . FirebaseConfig::getDatabaseUrl() . '</p>';
-    echo '<p style="color:green;">✅ Firebase REST API siap digunakan!</p>';
+// ❌ HAPUS SELURUH BAGIAN INI (test connection)
+// if (basename($_SERVER['PHP_SELF']) === 'firebase.php') { ... }
 
-    
-    echo '<hr>';
-    echo '<h3>Instruksi:</h3>';
-    echo '<ol>';
-    echo '<li>Ganti API Key di config/firebase.php (baris 21)</li>';
-    echo '<li>Ganti Database URL di config/firebase.php (baris 26)</li>';
-    echo '<li>Restart Apache</li>';
-    echo '<li>Buka login.php</li>';
-    echo '</ol>';
-}
+// ✅ Inisialisasi
+$auth = FirebaseConfig::getAuth();
+$database = FirebaseConfig::getDatabase();
 ?>
