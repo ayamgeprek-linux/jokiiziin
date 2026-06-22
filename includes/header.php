@@ -32,7 +32,7 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
     <title>doret.id — Manajemen Cuti Karyawan</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
     
     <style>
