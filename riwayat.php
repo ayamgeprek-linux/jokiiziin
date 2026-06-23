@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: riwayat.php
  * FUNGSI: Riwayat Pengajuan Cuti
- * VERSION: 2.0 - Fixed
+ * VERSION: 3.0 - With Admin Notes & Documents
  * =====================================================
  */
 
@@ -22,7 +22,7 @@ $database = FirebaseConfig::getDatabase();
 // AMBIL DATA DARI FIREBASE (REST API)
 // =====================================================
 
-// 🔥 PERBAIKAN: Ambil SEMUA data, filter manual
+// Ambil SEMUA data, filter manual
 $allPermohonan = $database->getReference('permohonan')->getValue();
 $permohonan = [];
 
@@ -34,12 +34,6 @@ if (is_array($allPermohonan) && !empty($allPermohonan)) {
         }
     }
 }
-
-// 🔥 DEBUG: Log data
-error_log('=== RIWAYAT USER ===');
-error_log('UID: ' . $uid);
-error_log('Jumlah: ' . count($permohonan));
-error_log(print_r($permohonan, true));
 
 // Statistik
 $stats = [
@@ -185,6 +179,17 @@ include 'includes/header.php';
                             </div>
                         </li>
                     </ul>
+                    
+                    <!-- 🔥 TAMPILKAN DOKUMEN JIKA ADA -->
+                    <?php if (!empty($activeRequest['dokumen'])): ?>
+                        <div style="margin:12px 0;padding:12px 16px;background:rgba(255,255,255,.05);border-radius:var(--r-md);border:1px dashed rgba(255,255,255,.1);">
+                            <div style="font-size:11px;color:rgba(255,255,255,.5);">📎 Dokumen Pendukung</div>
+                            <a href="<?= escape($activeRequest['dokumen']) ?>" target="_blank" style="color:var(--clr-primary-light);font-size:13px;text-decoration:underline;">
+                                <i class="ri-file-pdf-line"></i> Lihat Dokumen
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                    
                     <div class="detail-btns">
                         <button class="btn btn-outline" style="border-color:rgba(255,255,255,.2);color:#fff;flex:1;" onclick="showToast('Mengunduh bukti pengajuan...')">
                             Unduh Bukti
@@ -248,7 +253,7 @@ include 'includes/header.php';
                                         <td><?= $izin['durasi'] ?? 0 ?> hari</td>
                                         <td><?= getStatusBadge($izin['status'] ?? 'Menunggu') ?></td>
                                         <td>
-                                            <div class="history-action-icon" onclick="showToast('Detail pengajuan #<?= escape($izin['id'] ?? '') ?>')">
+                                            <div class="history-action-icon" onclick="showDetail('<?= $key ?>')">
                                                 <i class="ri-eye-line"></i>
                                             </div>
                                             <?php if (isset($izin['dokumen']) && $izin['dokumen']): ?>
@@ -339,9 +344,20 @@ include 'includes/header.php';
                     <span><i class="ri-calendar-line"></i> <?= formatTanggal($izin['created_at'] ?? '') ?></span>
                     <span><i class="ri-time-line"></i> <?= $izin['durasi'] ?? 0 ?> hari</span>
                 </div>
-                <?php if (isset($izin['catatan']) && $izin['catatan']): ?>
-                    <div style="margin-top:8px;font-size:12px;color:var(--clr-muted);background:var(--clr-bg);padding:8px;border-radius:var(--r-sm);">
-                        <i class="ri-chat-3-line"></i> <?= escape($izin['catatan']) ?>
+                
+                <!-- 🔥 CATATAN ADMIN -->
+                <?php if (!empty($izin['catatan_admin'])): ?>
+                    <div style="margin-top:8px;font-size:12px;color:var(--clr-muted);background:var(--clr-bg);padding:8px;border-radius:var(--r-sm);border-left:2px solid var(--clr-primary);">
+                        <i class="ri-chat-3-line"></i> <strong>Catatan Admin:</strong> <?= escape($izin['catatan_admin']) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- 🔥 DOKUMEN -->
+                <?php if (!empty($izin['dokumen'])): ?>
+                    <div style="margin-top:6px;">
+                        <a href="<?= escape($izin['dokumen']) ?>" target="_blank" style="font-size:12px;color:var(--clr-primary);text-decoration:underline;">
+                            <i class="ri-file-pdf-line"></i> Lihat Dokumen
+                        </a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -369,6 +385,23 @@ include 'includes/header.php';
     <div style="height:70px;"></div>
 </div>
 
+<!-- =====================================================
+     MODAL DETAIL RIWAYAT
+     ===================================================== -->
+<div id="detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:var(--r-xl);max-width:500px;width:100%;padding:32px;box-shadow:var(--shadow-lg);max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;">Detail Pengajuan</h3>
+            <button onclick="closeDetailModal()" style="background:var(--clr-bg);border:1px solid var(--clr-border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div id="detail-content">
+            <p style="text-align:center;color:var(--clr-muted);">Loading...</p>
+        </div>
+    </div>
+</div>
+
 <!-- Mobile Nav -->
 <nav class="mobile-nav-bar">
     <button class="mobile-nav-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
@@ -381,6 +414,66 @@ include 'includes/header.php';
 <div id="global-toast" class="toast-notif" style="display:none;"></div>
 
 <script>
+// Data untuk detail modal
+const allData = <?= json_encode($permohonan) ?>;
+
+function showDetail(key) {
+    const data = allData[key];
+    if (!data) {
+        showToast('Data tidak ditemukan', 'ri-error-warning-line');
+        return;
+    }
+    
+    const html = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><strong>ID</strong><br>${data.id || '-'}</div>
+            <div><strong>Status</strong><br>${data.status || '-'}</div>
+            <div><strong>Nama</strong><br>${data.user_name || '-'}</div>
+            <div><strong>NIP</strong><br>${data.nip || '-'}</div>
+            <div><strong>Jabatan</strong><br>${data.jabatan || '-'}</div>
+            <div><strong>Departemen</strong><br>${data.departemen || '-'}</div>
+            <div><strong>Jenis Cuti</strong><br>${data.jenis_cuti || '-'}</div>
+            <div><strong>Durasi</strong><br>${data.durasi || 0} hari</div>
+            <div style="grid-column:span 2;"><strong>Tanggal</strong><br>${data.tanggal_mulai || '-'} s/d ${data.tanggal_selesai || '-'}</div>
+            <div style="grid-column:span 2;"><strong>Alasan</strong><br>${data.alasan || '-'}</div>
+            
+            <!-- 🔥 CATATAN ADMIN -->
+            ${data.catatan_admin ? `
+                <div style="grid-column:span 2;background:#f8f5f0;padding:10px 14px;border-radius:var(--r-sm);border-left:3px solid var(--clr-primary);">
+                    <strong style="color:var(--clr-muted);">📝 Catatan Admin:</strong>
+                    <div style="margin-top:4px;">${data.catatan_admin}</div>
+                </div>
+            ` : ''}
+            
+            ${data.reviewed_by ? `<div><strong>Reviewer</strong><br>${data.reviewed_by}</div>` : ''}
+            ${data.reviewed_at ? `<div><strong>Tanggal Review</strong><br>${data.reviewed_at}</div>` : ''}
+            <div style="grid-column:span 2;"><strong>Tanggal Pengajuan</strong><br>${data.created_at || '-'}</div>
+            
+            <!-- 🔥 DOKUMEN -->
+            ${data.dokumen ? `
+                <div style="grid-column:span 2;margin-top:4px;">
+                    <a href="${data.dokumen}" target="_blank" class="btn btn-outline btn-sm" style="width:100%;text-align:center;">
+                        <i class="ri-file-pdf-line"></i> Lihat Dokumen Pendukung
+                    </a>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('detail-content').innerHTML = html;
+    document.getElementById('detail-modal').style.display = 'flex';
+}
+
+function closeDetailModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+}
+
+// Close modal on backdrop click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('detail-modal');
+    if (e.target === modal) closeDetailModal();
+});
+
 // Filter history
 document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', function() {

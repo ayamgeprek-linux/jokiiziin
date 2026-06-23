@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: includes/notifikasi.php
  * FUNGSI: Manajemen Notifikasi
- * VERSION: 1.0
+ * VERSION: 2.0 - Fix
  * =====================================================
  */
 
@@ -18,9 +18,6 @@ class NotifikasiManager {
         $this->isAdmin = $isAdmin;
     }
 
-    /**
-     * Mendapatkan jumlah notifikasi belum dibaca
-     */
     public function getUnreadCount() {
         $notifikasi = $this->getNotifikasi();
         $count = 0;
@@ -33,53 +30,35 @@ class NotifikasiManager {
                 }
             }
         }
-        
         return $count;
     }
 
-    /**
-     * Mendapatkan semua notifikasi user
-     */
     public function getNotifikasi() {
         $data = $this->database
             ->getReference('notifikasi/' . $this->uid)
             ->getValue();
-        
         return is_array($data) ? $data : [];
     }
 
-    /**
-     * Mendapatkan 5 notifikasi terbaru
-     */
     public function getRecentNotifikasi($limit = 5) {
         $notifikasi = $this->getNotifikasi();
+        if (empty($notifikasi)) return [];
         
-        if (empty($notifikasi)) {
-            return [];
-        }
-
-        // Urutkan dari yang terbaru
         usort($notifikasi, function($a, $b) {
             $timeA = strtotime($a['created_at'] ?? '1970-01-01');
             $timeB = strtotime($b['created_at'] ?? '1970-01-01');
             return $timeB - $timeA;
         });
-
+        
         return array_slice($notifikasi, 0, $limit);
     }
 
-    /**
-     * Tandai notifikasi sebagai sudah dibaca
-     */
     public function markAsRead($notifId) {
         return $this->database
             ->getReference('notifikasi/' . $this->uid . '/' . $notifId . '/dibaca')
             ->set(true);
     }
 
-    /**
-     * Tandai semua notifikasi sebagai sudah dibaca
-     */
     public function markAllAsRead() {
         $notifikasi = $this->getNotifikasi();
         if (empty($notifikasi)) return true;
@@ -93,32 +72,30 @@ class NotifikasiManager {
         return true;
     }
 
-    /**
-     * Kirim notifikasi ke user tertentu
-     */
-    public static function sendNotifikasi($database, $uid, $judul, $pesan, $link = '', $type = 'info') {
+    // 🔥 PERBAIKAN: Kirim notifikasi dengan catatan
+    public static function sendNotifikasi($database, $uid, $judul, $pesan, $link = '', $type = 'info', $catatan = '') {
         $notifData = [
             'judul' => $judul,
             'pesan' => $pesan,
             'link' => $link,
-            'type' => $type, // info, success, warning, danger
+            'type' => $type,
             'dibaca' => false,
             'created_at' => date('Y-m-d H:i:s'),
             'read_at' => null
         ];
+        
+        // 🔥 Tambahkan catatan jika ada
+        if (!empty($catatan)) {
+            $notifData['catatan'] = $catatan;
+        }
         
         return $database
             ->getReference('notifikasi/' . $uid)
             ->push($notifData);
     }
 
-    /**
-     * Kirim notifikasi ke semua admin
-     */
     public static function sendToAllAdmins($database, $judul, $pesan, $link = '', $type = 'info') {
-        // Ambil semua user dengan role admin
         $allUsers = $database->getReference('users')->getValue();
-        
         if (!is_array($allUsers) || empty($allUsers)) {
             return false;
         }
@@ -129,26 +106,20 @@ class NotifikasiManager {
                 self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type);
             }
         }
-        
         return true;
     }
 
-    /**
-     * Generate notifikasi untuk pengajuan baru (untuk admin)
-     */
+    // 🔥 PERBAIKAN: Notifikasi pengajuan baru
     public static function notifikasiPengajuanBaru($database, $cutiData) {
         $judul = '📝 Pengajuan Cuti Baru';
         $pesan = $cutiData['user_name'] . ' mengajukan ' . $cutiData['jenis_cuti'] . ' (' . $cutiData['durasi'] . ' hari)';
         $link = 'admin.php';
         $type = 'warning';
-        
         return self::sendToAllAdmins($database, $judul, $pesan, $link, $type);
     }
 
-    /**
-     * Generate notifikasi untuk status berubah (untuk user)
-     */
-    public static function notifikasiStatusBerubah($database, $uid, $cutiData, $statusBaru) {
+    // 🔥 PERBAIKAN: Notifikasi status berubah dengan catatan
+    public static function notifikasiStatusBerubah($database, $uid, $cutiData, $statusBaru, $catatan = '') {
         $statusText = '';
         $type = 'info';
         switch ($statusBaru) {
@@ -171,9 +142,14 @@ class NotifikasiManager {
         
         $judul = '📢 Status Cuti Berubah';
         $pesan = 'Pengajuan ' . $cutiData['jenis_cuti'] . ' Anda ' . $statusText;
-        $link = 'riwayat.php';
         
-        return self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type);
+        // 🔥 Tambahkan catatan ke pesan jika ada
+        if (!empty($catatan)) {
+            $pesan .= '. Catatan: "' . $catatan . '"';
+        }
+        
+        $link = 'riwayat.php';
+        return self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type, $catatan);
     }
 }
 ?>

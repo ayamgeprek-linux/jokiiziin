@@ -32,21 +32,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_cuti'])) {
             // Ambil data cuti dulu untuk notifikasi
             $cutiData = $database->getReference('permohonan/' . $id)->getValue();
             
-            // Update status
-            $database->getReference('permohonan/' . $id)->update([
+            // 🔥 PERBAIKAN: Update dengan catatan
+            $updateData = [
                 'status' => $status,
-                'catatan' => $catatan,
                 'reviewed_by' => $user['name'] ?? 'Admin',
                 'reviewed_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            ];
             
-            // KIRIM NOTIFIKASI KE USER
+            // 🔥 Tambahkan catatan jika ada
+            if (!empty($catatan)) {
+                $updateData['catatan_admin'] = $catatan; // Catatan dari admin
+            }
+            
+            $database->getReference('permohonan/' . $id)->update($updateData);
+            
+            // 🔥 KIRIM NOTIFIKASI KE USER dengan catatan
             NotifikasiManager::notifikasiStatusBerubah(
                 $database, 
                 $cutiData['user_id'] ?? '', 
                 $cutiData, 
-                $status
+                $status,
+                $catatan // Tambahkan catatan ke notifikasi
             );
             
             $_SESSION['flash_message'] = 'Pengajuan cuti berhasil di-' . strtolower($status) . '!';
@@ -57,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_cuti'])) {
         }
     }
 }
-
 // =====================================================
 // AMBIL DATA DARI FIREBASE (REST API)
 // =====================================================

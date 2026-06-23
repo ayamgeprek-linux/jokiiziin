@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: home.php
  * FUNGSI: Dashboard User
- * VERSION: 3.0 - With Notifikasi
+ * VERSION: 4.0 - With Note & Upload Fix
  * =====================================================
  */
 
@@ -70,15 +70,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajukan_cuti'])) {
             'alasan' => $alasan,
             'status' => 'Menunggu',
             'dokumen' => '',
+            'catatan_admin' => '', // 🔥 Untuk menyimpan catatan dari admin
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
         
+        // 🔥 UPLOAD DOKUMEN KE FIREBASE STORAGE
         if ($dokumen && $dokumen['error'] === 0) {
             $uploadDir = __DIR__ . '/uploads/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
             $fileName = $uid . '_' . date('Ymd_His') . '_' . basename($dokumen['name']);
             $filePath = $uploadDir . $fileName;
+            
             if (move_uploaded_file($dokumen['tmp_name'], $filePath)) {
                 $cutiData['dokumen'] = 'uploads/' . $fileName;
             }
@@ -149,7 +152,7 @@ if (!empty($recentActivities)) {
     usort($recentActivities, function($a, $b) {
         return strtotime($b['created_at'] ?? '1970-01-01') - strtotime($a['created_at'] ?? '1970-01-01');
     });
-    $recentActivities = array_slice($recentActivities, 0, 3);
+    $recentActivities = array_slice($recentActivities, 0, 5);
 }
 
 $sisaCuti = getSisaCuti($uid, $database);
@@ -372,6 +375,24 @@ include 'includes/header.php';
                                             (<?= $activity['durasi'] ?? 0 ?> hari)
                                         </span>
                                     </div>
+                                    
+                                    <!-- 🔥 TAMPILKAN CATATAN DARI ADMIN -->
+                                    <?php if (!empty($activity['catatan_admin'])): ?>
+                                        <div style="background:var(--clr-bg);padding:8px 12px;border-radius:var(--r-sm);margin-top:6px;font-size:12px;border-left:3px solid var(--clr-primary);">
+                                            <strong style="color:var(--clr-muted);">📝 Catatan Admin:</strong>
+                                            <span><?= escape($activity['catatan_admin']) ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <!-- 🔥 TAMPILKAN DOKUMEN JIKA ADA -->
+                                    <?php if (!empty($activity['dokumen'])): ?>
+                                        <div style="margin-top:4px;">
+                                            <a href="<?= escape($activity['dokumen']) ?>" target="_blank" style="font-size:12px;color:var(--clr-primary);text-decoration:underline;">
+                                                <i class="ri-file-pdf-line"></i> Lihat Dokumen
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+                                    
                                     <div style="font-size:11px;color:var(--clr-muted);margin-top:2px;">
                                         <?= formatTanggalWaktu($activity['created_at'] ?? '') ?>
                                     </div>
@@ -549,6 +570,13 @@ include 'includes/header.php';
                                 <?= $activity['status'] ?? 'Menunggu' ?>
                             </span>
                         </div>
+                        <!-- 🔥 Catatan Admin di Mobile -->
+                        <?php if (!empty($activity['catatan_admin'])): ?>
+                            <div style="background:var(--clr-bg);padding:6px 10px;border-radius:var(--r-sm);margin-top:4px;font-size:11px;border-left:2px solid var(--clr-primary);">
+                                <strong style="color:var(--clr-muted);">📝 Catatan:</strong>
+                                <span><?= escape($activity['catatan_admin']) ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="ma-time"><?= formatTanggal($activity['created_at'] ?? '') ?></div>
                 </div>
