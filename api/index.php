@@ -17,9 +17,9 @@ $routes = [
     '/home.php' => __DIR__ . '/../home.php',
     '/riwayat' => __DIR__ . '/../riwayat.php',
     '/riwayat.php' => __DIR__ . '/../riwayat.php',
-    '/profile' => __DIR__ . '/../profile.php',        // 🔥 TAMBAHKAN INI
-    '/profile.php' => __DIR__ . '/../profile.php',    // 🔥 TAMBAHKAN INI
-    
+    '/profile' => __DIR__ . '/../profil.php',        // 🔥 TAMBAHKAN INI
+    '/profile.php' => __DIR__ . '/../profil.php',    // 🔥 TAMBAHKAN INI
+
     // Admin
     '/admin' => __DIR__ . '/../admin.php',
     '/admin.php' => __DIR__ . '/../admin.php',
