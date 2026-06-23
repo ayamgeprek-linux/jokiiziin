@@ -14,13 +14,9 @@
 <footer class="footer">
     <div class="footer-brand">
         doret.id<br>
-        <small>© <?= date('Y') ?> doret.id - Manajemen Cuti Karyawan</small>
+        <small>© <?= date('Y') ?> </small>
     </div>
-    <div class="footer-links">
-        <a href="#">Panduan Pengguna</a>
-        <a href="#">Kebijakan Privasi</a>
-        <a href="#">Kontak</a>
-    </div>
+    
 </footer>
 
 <!-- JavaScript -->
