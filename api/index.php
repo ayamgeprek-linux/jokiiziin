@@ -7,15 +7,30 @@ $path = parse_url($path, PHP_URL_PATH);
 
 // Mapping URL ke file di root
 $routes = [
+    // Login
+    '/' => __DIR__ . '/../login.php',
     '/login' => __DIR__ . '/../login.php',
     '/login.php' => __DIR__ . '/../login.php',
+    
+    // User
     '/home' => __DIR__ . '/../home.php',
     '/home.php' => __DIR__ . '/../home.php',
-    '/admin' => __DIR__ . '/../admin.php',
-    '/admin.php' => __DIR__ . '/../admin.php',
     '/riwayat' => __DIR__ . '/../riwayat.php',
     '/riwayat.php' => __DIR__ . '/../riwayat.php',
-    '/' => __DIR__ . '/../login.php',
+    
+    // Admin
+    '/admin' => __DIR__ . '/../admin.php',
+    '/admin.php' => __DIR__ . '/../admin.php',
+    '/admin_riwayat' => __DIR__ . '/../admin_riwayat.php',
+    '/admin_riwayat.php' => __DIR__ . '/../admin_riwayat.php',
+    '/admin_laporan' => __DIR__ . '/../admin_laporan.php',
+    '/admin_laporan.php' => __DIR__ . '/../admin_laporan.php',
+    '/admin_cetak_pdf' => __DIR__ . '/../admin_cetak_pdf.php',
+    '/admin_cetak_pdf.php' => __DIR__ . '/../admin_cetak_pdf.php',
+    
+    // Logout
+    '/logout' => __DIR__ . '/../logout.php',
+    '/logout.php' => __DIR__ . '/../logout.php',
 ];
 
 // Cek apakah path ada di routes

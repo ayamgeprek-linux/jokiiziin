@@ -95,7 +95,6 @@ include 'includes/header.php';
     </aside>
 
     <main class="main-content">
-        <!-- Header -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
             <div>
                 <h1 style="font-family:var(--font-display);font-size:28px;font-weight:800;">Riwayat Pengajuan</h1>
@@ -215,21 +214,6 @@ include 'includes/header.php';
     </main>
 </div>
 
-<!-- Modal Detail -->
-<div id="detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#fff;border-radius:var(--r-xl);max-width:500px;width:100%;padding:32px;box-shadow:var(--shadow-lg);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;">Detail Pengajuan</h3>
-            <button onclick="closeDetailModal()" style="background:var(--clr-bg);border:1px solid var(--clr-border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-                <i class="ri-close-line"></i>
-            </button>
-        </div>
-        <div id="detail-content">
-            <p>Loading...</p>
-        </div>
-    </div>
-</div>
-
 <script>
 const allData = <?= json_encode($permohonan) ?>;
 
@@ -259,18 +243,22 @@ function showDetail(key) {
         </div>
     `;
     
-    document.getElementById('detail-content').innerHTML = html;
-    document.getElementById('detail-modal').style.display = 'flex';
+    // Buat modal sederhana
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:var(--r-xl);max-width:500px;width:100%;padding:32px;box-shadow:var(--shadow-lg);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <h3 style="font-family:var(--font-display);font-size:20px;font-weight:700;">Detail Pengajuan</h3>
+                <button onclick="this.closest('div[style]').remove()" style="background:var(--clr-bg);border:1px solid var(--clr-border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            ${html}
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
-
-function closeDetailModal() {
-    document.getElementById('detail-modal').style.display = 'none';
-}
-
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('detail-modal');
-    if (e.target === modal) closeDetailModal();
-});
 </script>
 
 <?php include 'includes/footer.php'; ?>
