@@ -3,13 +3,13 @@
  * =====================================================
  * FILE: includes/footer.php
  * FUNGSI: Footer untuk semua halaman
- * VERSION: 2.0 - Updated with Magang.usg brand
+ * VERSION: 3.0 - Fixed (Only 1 Footer)
  * =====================================================
  */
 ?>
 
 <!-- =====================================================
-     FOOTER
+     FOOTER - HANYA 1
      ===================================================== -->
 <footer class="footer">
     <div class="footer-brand">
@@ -18,21 +18,23 @@
         <small style="color:var(--clr-muted);font-size:12px;">© <?= date('Y') ?> Magang.usg - Manajemen Cuti Karyawan</small>
     </div>
     <div class="footer-links">
-        <a href="#">Panduan Pengguna</a>
-        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Panduan</a>
+        <a href="#">Privasi</a>
         <a href="#">Kontak</a>
-        <a href="#">Tentang Kami</a>
     </div>
 </footer>
+
+<!-- =====================================================
+     GLOBAL TOAST (Jika belum ada di file lain)
+     ===================================================== -->
+<div id="global-toast" class="toast-notif" style="display:none;"></div>
 
 <!-- =====================================================
      JAVASCRIPT
      ===================================================== -->
 <script src="/assets/js/app.js"></script>
 
-<!-- Toast Notification -->
 <script>
-// Override showToast untuk integrasi dengan PHP
 function showToast(message, icon = 'ri-information-line') {
     const t = document.getElementById('global-toast');
     if (!t) return;
@@ -44,7 +46,6 @@ function showToast(message, icon = 'ri-information-line') {
     }, 3000);
 }
 
-// Auto-show toast jika ada pesan dari PHP
 <?php if (isset($_SESSION['flash_message'])): ?>
     showToast('<?= addslashes($_SESSION['flash_message']) ?>');
     <?php unset($_SESSION['flash_message']); ?>

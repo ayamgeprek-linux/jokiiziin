@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: riwayat.php
  * FUNGSI: Riwayat Pengajuan Cuti
- * VERSION: 3.0 - With Admin Notes & Documents
+ * VERSION: 4.0 - Fixed Mobile Scroll & Profile Link
  * =====================================================
  */
 
@@ -78,6 +78,7 @@ include 'includes/header.php';
         <div class="sidebar-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i> Dashboard</div>
         <div class="sidebar-item" onclick="window.location.href='home.php#ajukan-cuti'"><i class="ri-add-circle-line"></i> Ajukan Cuti</div>
         <div class="sidebar-item active"><i class="ri-history-line"></i> Riwayat</div>
+        <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
             <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
             <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
@@ -299,7 +300,7 @@ include 'includes/header.php';
 </div>
 
 <!-- =====================================================
-     MOBILE HISTORY VIEW
+     MOBILE HISTORY VIEW - FIXED
      ===================================================== -->
 <div id="mobile-history-view" style="display:none;" class="page-with-mobile-nav">
     <div style="padding:20px 16px 8px;display:flex;align-items:center;justify-content:space-between;">
@@ -311,58 +312,60 @@ include 'includes/header.php';
             <div class="notif-btn" onclick="showToast('Tidak ada notifikasi baru')">
                 <i class="ri-notification-3-line"></i>
             </div>
-            <div class="topbar-avatar" style="background:var(--clr-primary);width:36px;height:36px;">
+            <div class="topbar-avatar" style="background:var(--clr-primary);width:36px;height:36px;font-size:14px;cursor:pointer;" onclick="window.location.href='profile.php'">
                 <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
             </div>
         </div>
     </div>
     
-    <div class="mobile-search" style="margin-bottom:16px;">
+    <!-- Search -->
+    <div class="mobile-search" style="margin:0 16px 16px;">
         <i class="ri-search-line"></i>
         <input type="text" placeholder="Cari pengajuan cuti..." id="mobile-search-history">
     </div>
 
-    <?php if (empty($permohonan)): ?>
-        <div style="text-align:center;padding:40px 16px;color:var(--clr-muted);">
-            <i class="ri-inbox-line" style="font-size:48px;display:block;margin-bottom:12px;"></i>
-            <h4 style="font-size:16px;font-weight:600;">Belum Ada Pengajuan</h4>
-            <p style="font-size:13px;">Mulai ajukan cuti Anda sekarang</p>
-            <button class="btn btn-primary" style="margin-top:12px;" onclick="window.location.href='home.php#ajukan-cuti-mobile'">
-                Ajukan Cuti
-            </button>
-        </div>
-    <?php else: ?>
-        <?php foreach (array_reverse($permohonan) as $key => $izin): ?>
-            <?php if (!is_array($izin)) continue; ?>
-            <div class="mobile-hist-card">
-                <div class="mobile-hist-header">
-                    <span class="mobile-hist-id">#<?= escape($izin['id'] ?? 'CUT-' . substr($key, -4)) ?></span>
-                    <?= getStatusBadge($izin['status'] ?? 'Menunggu') ?>
-                </div>
-                <div class="mobile-hist-title"><?= escape($izin['jenis_cuti'] ?? 'Cuti') ?></div>
-                <div class="mobile-hist-meta">
-                    <span><i class="ri-calendar-line"></i> <?= formatTanggal($izin['created_at'] ?? '') ?></span>
-                    <span><i class="ri-time-line"></i> <?= $izin['durasi'] ?? 0 ?> hari</span>
-                </div>
-                
-                <!-- 🔥 CATATAN ADMIN -->
-                <?php if (!empty($izin['catatan_admin'])): ?>
-                    <div style="margin-top:8px;font-size:12px;color:var(--clr-muted);background:var(--clr-bg);padding:8px;border-radius:var(--r-sm);border-left:2px solid var(--clr-primary);">
-                        <i class="ri-chat-3-line"></i> <strong>Catatan Admin:</strong> <?= escape($izin['catatan_admin']) ?>
+    <!-- MOBILE HISTORY CONTAINER (FIX: tidak bisa digeser) -->
+    <div class="mobile-history-container" style="padding:0 12px;overflow-x:hidden;width:100%;">
+        <?php if (empty($permohonan)): ?>
+            <div style="text-align:center;padding:40px 16px;color:var(--clr-muted);">
+                <i class="ri-inbox-line" style="font-size:48px;display:block;margin-bottom:12px;"></i>
+                <h4 style="font-size:16px;font-weight:600;">Belum Ada Pengajuan</h4>
+                <p style="font-size:13px;">Mulai ajukan cuti Anda sekarang</p>
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="window.location.href='home.php#ajukan-cuti-mobile'">
+                    Ajukan Cuti
+                </button>
+            </div>
+        <?php else: ?>
+            <?php foreach (array_reverse($permohonan) as $key => $izin): ?>
+                <?php if (!is_array($izin)) continue; ?>
+                <div class="mobile-hist-card" style="width:100%;box-sizing:border-box;margin:0 0 10px 0;padding:14px;background:var(--clr-surface);border:1px solid var(--clr-border);border-radius:var(--r-lg);cursor:pointer;transition:all .2s;" onclick="showDetail('<?= $key ?>')">
+                    <div class="mobile-hist-header" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
+                        <span class="mobile-hist-id" style="font-size:11px;font-weight:700;color:var(--clr-muted);">#<?= escape($izin['id'] ?? 'CUT-' . substr($key, -4)) ?></span>
+                        <?= getStatusBadge($izin['status'] ?? 'Menunggu') ?>
                     </div>
-                <?php endif; ?>
-                
-                <!-- 🔥 DOKUMEN -->
-                <?php if (!empty($izin['dokumen'])): ?>
-                    <div style="margin-top:6px;">
-                        <a href="<?= escape($izin['dokumen']) ?>" target="_blank" style="font-size:12px;color:var(--clr-primary);text-decoration:underline;">
+                    <div class="mobile-hist-title" style="font-size:14px;font-weight:700;margin-bottom:4px;word-wrap:break-word;"><?= escape($izin['jenis_cuti'] ?? 'Cuti') ?></div>
+                    <div class="mobile-hist-meta" style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <span style="font-size:11px;color:var(--clr-muted);display:flex;align-items:center;gap:4px;"><i class="ri-calendar-line"></i> <?= formatTanggal($izin['created_at'] ?? '') ?></span>
+                        <span style="font-size:11px;color:var(--clr-muted);display:flex;align-items:center;gap:4px;"><i class="ri-time-line"></i> <?= $izin['durasi'] ?? 0 ?> hari</span>
+                    </div>
+                    
+                    <!-- Catatan Admin -->
+                    <?php if (!empty($izin['catatan_admin'])): ?>
+                        <div style="margin-top:8px;font-size:11px;color:var(--clr-muted);background:var(--clr-bg);padding:6px 10px;border-radius:var(--r-sm);border-left:2px solid var(--clr-primary);word-wrap:break-word;">
+                            <i class="ri-chat-3-line"></i> <strong>Catatan Admin:</strong> <?= escape($izin['catatan_admin']) ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <!-- Dokumen -->
+                    <?php if (!empty($izin['dokumen'])): ?>
+                        <a href="<?= escape($izin['dokumen']) ?>" target="_blank" style="margin-top:6px;display:inline-block;font-size:12px;color:var(--clr-primary);text-decoration:underline;word-wrap:break-word;" onclick="event.stopPropagation();">
                             <i class="ri-file-pdf-line"></i> Lihat Dokumen
                         </a>
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
 
     <!-- Help Card Mobile -->
     <div style="margin:16px;background:var(--clr-surface);border:1px solid var(--clr-border);border-radius:var(--r-lg);padding:24px;text-align:center;">
@@ -370,7 +373,7 @@ include 'includes/header.php';
             <i class="ri-question-line"></i>
         </div>
         <h4 style="font-weight:700;margin-bottom:8px;">Butuh bantuan?</h4>
-        <p style="font-size:13px;color:var(--clr-muted);margin-bottom:16px;line-height:1.6;">Mengalami kendala dalam pengecekan status cuti? Tim HRD siap membantu Anda.</p>
+        <p style="font-size:13px;color:var(--clr-muted);margin-bottom:16px;line-height:1.6;">Mengalami kendala? Tim HRD siap membantu Anda.</p>
         <button class="btn btn-gold btn-full" style="margin-bottom:10px;" onclick="showToast('Menghubungi HRD...')">
             <i class="ri-customer-service-2-line"></i> Chat HRD
         </button>
@@ -407,7 +410,7 @@ include 'includes/header.php';
     <button class="mobile-nav-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
     <button class="mobile-nav-item" onclick="window.location.href='home.php#ajukan-cuti-mobile'"><i class="ri-add-circle-line"></i>Ajukan</button>
     <button class="mobile-nav-item active"><i class="ri-history-line"></i>Riwayat</button>
-    <button class="mobile-nav-item"><i class="ri-settings-3-line"></i>Akun</button>
+    <button class="mobile-nav-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i>Profil</button>
 </nav>
 
 <!-- Global Toast -->
@@ -437,7 +440,6 @@ function showDetail(key) {
             <div style="grid-column:span 2;"><strong>Tanggal</strong><br>${data.tanggal_mulai || '-'} s/d ${data.tanggal_selesai || '-'}</div>
             <div style="grid-column:span 2;"><strong>Alasan</strong><br>${data.alasan || '-'}</div>
             
-            <!-- 🔥 CATATAN ADMIN -->
             ${data.catatan_admin ? `
                 <div style="grid-column:span 2;background:#f8f5f0;padding:10px 14px;border-radius:var(--r-sm);border-left:3px solid var(--clr-primary);">
                     <strong style="color:var(--clr-muted);">📝 Catatan Admin:</strong>
@@ -449,7 +451,6 @@ function showDetail(key) {
             ${data.reviewed_at ? `<div><strong>Tanggal Review</strong><br>${data.reviewed_at}</div>` : ''}
             <div style="grid-column:span 2;"><strong>Tanggal Pengajuan</strong><br>${data.created_at || '-'}</div>
             
-            <!-- 🔥 DOKUMEN -->
             ${data.dokumen ? `
                 <div style="grid-column:span 2;margin-top:4px;">
                     <a href="${data.dokumen}" target="_blank" class="btn btn-outline btn-sm" style="width:100%;text-align:center;">
