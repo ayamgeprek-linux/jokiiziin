@@ -110,7 +110,7 @@ include 'includes/header.php';
             </button>
         </div>
 
-        <?php include 'includes/footer.php'; ?>
+        
     </main>
 </div>
 
