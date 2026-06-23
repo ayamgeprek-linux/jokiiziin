@@ -3,26 +3,34 @@
  * =====================================================
  * FILE: includes/footer.php
  * FUNGSI: Footer untuk semua halaman
+ * VERSION: 2.0 - Updated with Magang.usg brand
  * =====================================================
- * 
- * @package doret-cuti
- * @version 1.0.0
  */
 ?>
 
-<!-- FOOTER -->
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
 <footer class="footer">
     <div class="footer-brand">
-        doret.id<br>
-        <small>© <?= date('Y') ?> </small>
+        <strong style="font-size:16px;font-family:var(--font-display);">Magang<span style="color:var(--clr-primary);">.usg</span></strong>
+        <br>
+        <small style="color:var(--clr-muted);font-size:12px;">© <?= date('Y') ?> Magang.usg - Manajemen Cuti Karyawan</small>
     </div>
-    
+    <div class="footer-links">
+        <a href="#">Panduan Pengguna</a>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Kontak</a>
+        <a href="#">Tentang Kami</a>
+    </div>
 </footer>
 
-<!-- JavaScript -->
-<script src="assets/js/app.js"></script>
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+<script src="/assets/js/app.js"></script>
 
-<!-- Inisialisasi Toast -->
+<!-- Toast Notification -->
 <script>
 // Override showToast untuk integrasi dengan PHP
 function showToast(message, icon = 'ri-information-line') {
@@ -31,7 +39,9 @@ function showToast(message, icon = 'ri-information-line') {
     t.innerHTML = `<i class="${icon}"></i> ${message}`;
     t.style.display = 'flex';
     if (window.toastTimer) clearTimeout(window.toastTimer);
-    window.toastTimer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+    window.toastTimer = setTimeout(() => { 
+        t.style.display = 'none'; 
+    }, 3000);
 }
 
 // Auto-show toast jika ada pesan dari PHP

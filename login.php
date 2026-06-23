@@ -335,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <a href="#">Kontak</a>
                 </div>
                 <div style="text-align:center;padding:8px;font-size:11px;color:var(--clr-muted);background:#F2F2F2;">
-                    © <?= date('Y') ?> doret.id &nbsp;·&nbsp; v2.4.0
+                    © <?= date('Y') ?>magangusg &nbsp;·&nbsp; v2.4.0
                 </div>
             </div>
         </div>
