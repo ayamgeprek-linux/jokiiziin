@@ -491,13 +491,7 @@ include 'includes/header.php';
             <h2>📋 Riwayat Cuti</h2>
             <div class="sub-info">Sisa cuti: <strong><?= $sisaCuti ?></strong> hari</div>
         </div>
-        <div class="avatar-wrapper">
-            <div class="notif-btn" onclick="showToast('Tidak ada notifikasi baru')">
-                <i class="ri-notification-3-line"></i>
-            </div>
-            <div class="avatar-small" onclick="window.location.href='profile.php'">
-                <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
-            </div>
+       
         </div>
     </div>
 
