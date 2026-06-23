@@ -318,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         <img src="https://www.google.com/favicon.ico" alt="G"> GOOGLE
                     </button>
                     <button class="btn-sso" style="width:100%;padding:12px;">
-                        <div class="satusehat-icon"><i class="ri-hospital-line" style="font-size:10px;"></i></div> SATUSEHAT
+                        <div class="satusehat-icon"><i class="ri-hospital-line" style="font-size:10px;"></i></div> email
                     </button>
                     
                     <p class="login-footer-text" style="margin-top:16px;">
