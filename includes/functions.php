@@ -2,85 +2,50 @@
 /**
  * =====================================================
  * FILE: includes/functions.php
- * FUNGSI: Fungsi-fungsi helper untuk aplikasi
- * VERSION: 2.0 - Fixed for REST API
+ * VERSION: 4.0 - All functions
  * =====================================================
  */
 
-/**
- * Fungsi untuk menampilkan toast notification via JavaScript
- */
+// ============================================
+// FUNGSI DASAR
+// ============================================
+
 function showToast($message, $type = 'info') {
     $icon = 'ri-information-line';
     switch ($type) {
-        case 'success':
-            $icon = 'ri-checkbox-circle-line';
-            break;
-        case 'error':
-            $icon = 'ri-close-circle-line';
-            break;
-        case 'warning':
-            $icon = 'ri-alert-line';
-            break;
+        case 'success': $icon = 'ri-checkbox-circle-line'; break;
+        case 'error': $icon = 'ri-close-circle-line'; break;
+        case 'warning': $icon = 'ri-alert-line'; break;
     }
     echo "<script>showToast('" . addslashes($message) . "', '" . $icon . "');</script>";
 }
 
-/**
- * Fungsi untuk mendapatkan status cuti dengan badge HTML
- */
 function getStatusBadge($status) {
     $class = '';
     switch ($status) {
-        case 'Menunggu':
-            $class = 'badge-warning';
-            break;
-        case 'Disetujui':
-            $class = 'badge-success';
-            break;
-        case 'Ditolak':
-            $class = 'badge-danger';
-            break;
-        case 'Selesai':
-            $class = 'badge-dark';
-            break;
-        default:
-            $class = 'badge-warning';
+        case 'Menunggu': $class = 'badge-warning'; break;
+        case 'Disetujui': $class = 'badge-success'; break;
+        case 'Ditolak': $class = 'badge-danger'; break;
+        case 'Selesai': $class = 'badge-dark'; break;
+        default: $class = 'badge-warning';
     }
     return '<span class="badge ' . $class . '">' . $status . '</span>';
 }
 
-/**
- * Format tanggal ke format Indonesia
- */
 function formatTanggal($datetime) {
     if (empty($datetime)) return '-';
-    
-    $bulan = [
-        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
-        5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
-        9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
-    ];
-    
+    $bulan = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',
+              7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
     $date = date_create($datetime);
     if (!$date) return $datetime;
-    
-    return date_format($date, 'd') . ' ' . 
-           $bulan[(int)date_format($date, 'n')] . ' ' . 
-           date_format($date, 'Y');
+    return date_format($date, 'd') . ' ' . $bulan[(int)date_format($date, 'n')] . ' ' . date_format($date, 'Y');
 }
 
-/**
- * Format tanggal dan waktu ke format Indonesia
- */
 function formatTanggalWaktu($datetime) {
     if (empty($datetime)) return '-';
     return formatTanggal($datetime) . ', ' . date('H:i', strtotime($datetime));
 }
 
-/**
- * Mendapatkan daftar jenis cuti
- */
 function getJenisCuti() {
     return [
         'Cuti Tahunan' => 'Cuti tahunan (12 hari kerja)',
@@ -93,94 +58,108 @@ function getJenisCuti() {
     ];
 }
 
-/**
- * =====================================================
- * 🔥 PERBAIKAN: Menghitung sisa cuti
- * =====================================================
- */
+// ============================================
+// FUNGSI CUTI
+// ============================================
+
 function getSisaCuti($uid, $database) {
-    // Ambil data user
-    $userData = $database
-        ->getReference('users/' . $uid)
-        ->getValue();
+    $userData = $database->getReference('users/' . $uid)->getValue();
+    $totalCuti = (is_array($userData) && isset($userData['sisa_cuti'])) ? (int)$userData['sisa_cuti'] : 12;
     
-    // 🔥 PERBAIKAN 1: Cek apakah userData adalah array
-    $totalCuti = 12; // Default
-    if (is_array($userData) && isset($userData['sisa_cuti'])) {
-        $totalCuti = (int)$userData['sisa_cuti'];
-    }
-    
-    // Ambil cuti yang sudah disetujui
-    $permohonan = $database
-        ->getReference('permohonan')
-        ->orderByChild('user_id')
-        ->equalTo($uid)
-        ->getValue();
-    
+    $allPermohonan = $database->getReference('permohonan')->getValue();
     $used = 0;
     
-    // 🔥 PERBAIKAN 2: Cek apakah $permohonan adalah array
-    if (is_array($permohonan) && !empty($permohonan)) {
-        foreach ($permohonan as $key => $izin) {
-            // 🔥 PERBAIKAN 3: Pastikan $izin adalah array
-            if (!is_array($izin)) {
-                continue;
-            }
+    if (is_array($allPermohonan) && !empty($allPermohonan)) {
+        foreach ($allPermohonan as $izin) {
+            if (!is_array($izin)) continue;
+            if (($izin['user_id'] ?? '') !== $uid) continue;
             
             $status = $izin['status'] ?? '';
             if ($status === 'Disetujui' || $status === 'Selesai') {
-                // 🔥 PERBAIKAN 4: Gunakan null coalescing untuk tanggal
                 $startDate = $izin['tanggal_mulai'] ?? null;
                 $endDate = $izin['tanggal_selesai'] ?? null;
-                
                 if ($startDate && $endDate) {
                     try {
                         $start = new DateTime($startDate);
                         $end = new DateTime($endDate);
                         $diff = $start->diff($end);
                         $used += $diff->days + 1;
-                    } catch (Exception $e) {
-                        // Jika format tanggal salah, skip
-                        continue;
-                    }
+                    } catch (Exception $e) { continue; }
                 }
             }
         }
     }
-    
     return max(0, $totalCuti - $used);
 }
 
-/**
- * Generate ID unik untuk permohonan
- */
 function generateCutiId() {
-    $year = date('Y');
-    $random = strtoupper(substr(uniqid(), -4));
-    return 'CUT-' . $year . '-' . $random;
+    return 'CUT-' . date('Y') . '-' . strtoupper(substr(uniqid(), -4));
+}
+
+// ============================================
+// FUNGSI SISA CUTI (BARU)
+// ============================================
+
+/**
+ * 🔥 UPDATE SISA CUTI - Saat cuti disetujui
+ */
+function updateSisaCuti($uid, $durasi, $database) {
+    $userData = $database->getReference('users/' . $uid)->getValue();
+    
+    if (!is_array($userData)) {
+        return false;
+    }
+    
+    $sisaCuti = (int)($userData['sisa_cuti'] ?? 12);
+    $sisaCutiBaru = max(0, $sisaCuti - $durasi);
+    
+    $database->getReference('users/' . $uid . '/sisa_cuti')->set($sisaCutiBaru);
+    
+    return $sisaCutiBaru;
 }
 
 /**
- * Get user data by UID
+ * 🔥 TAMBAH SISA CUTI - Untuk admin
  */
-function getUserData($uid, $database) {
-    $data = $database
-        ->getReference('users/' . $uid)
-        ->getValue();
+function tambahSisaCuti($uid, $tambah, $database) {
+    $userData = $database->getReference('users/' . $uid)->getValue();
     
+    if (!is_array($userData)) {
+        return false;
+    }
+    
+    $sisaCuti = (int)($userData['sisa_cuti'] ?? 12);
+    $sisaCutiBaru = $sisaCuti + $tambah;
+    
+    $database->getReference('users/' . $uid . '/sisa_cuti')->set($sisaCutiBaru);
+    
+    return $sisaCutiBaru;
+}
+
+/**
+ * 🔥 GET ALL USERS - Untuk admin
+ */
+function getAllUsers($database) {
+    $users = $database->getReference('users')->getValue();
+    return is_array($users) ? $users : [];
+}
+
+function getUserData($uid, $database) {
+    $data = $database->getReference('users/' . $uid)->getValue();
     return is_array($data) ? $data : null;
 }
 
-/**
- * Redirect ke halaman tertentu
- */
+// ============================================
+// FUNGSI REDIRECT & AUTH (🔥 PASTIKAN ADA!)
+// ============================================
+
 function redirect($url) {
     header('Location: ' . $url);
     exit;
 }
 
 /**
- * Cek apakah user sudah login
+ * 🔥 Cek apakah user sudah login, jika tidak redirect ke login
  */
 function requireLogin($auth) {
     if (!$auth->isLoggedIn()) {
@@ -189,7 +168,7 @@ function requireLogin($auth) {
 }
 
 /**
- * Cek apakah user adalah admin
+ * 🔥 Cek apakah user adalah admin, jika tidak redirect ke home
  */
 function requireAdmin($auth) {
     requireLogin($auth);
@@ -198,11 +177,34 @@ function requireAdmin($auth) {
     }
 }
 
-/**
- * Escape string untuk keamanan XSS
- */
+// ============================================
+// FUNGSI KEAMANAN
+// ============================================
+
 function escape($string) {
-    if ($string === null) return '';
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+}
+
+// ============================================
+// FUNGSI BASE_URL
+// ============================================
+
+function base_url($path = '') {
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $isLocal = strpos($host, 'localhost') !== false || 
+               strpos($host, '127.0.0.1') !== false ||
+               strpos($host, '192.168.') !== false;
+    
+    if ($isLocal) {
+        $base = '/izin'; // Ganti dengan folder project Anda
+    } else {
+        $base = '';
+    }
+    
+    $path = ltrim($path, '/');
+    if (empty($path)) {
+        return $base . '/';
+    }
+    return $base . '/' . $path;
 }
 ?>

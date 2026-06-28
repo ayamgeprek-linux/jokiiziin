@@ -2,8 +2,7 @@
 /**
  * =====================================================
  * FILE: includes/notifikasi.php
- * FUNGSI: Manajemen Notifikasi
- * VERSION: 2.0 - Fix
+ * VERSION: 3.0 - Fixed Notification
  * =====================================================
  */
 
@@ -21,7 +20,6 @@ class NotifikasiManager {
     public function getUnreadCount() {
         $notifikasi = $this->getNotifikasi();
         $count = 0;
-        
         if (is_array($notifikasi) && !empty($notifikasi)) {
             foreach ($notifikasi as $notif) {
                 if (!is_array($notif)) continue;
@@ -34,9 +32,7 @@ class NotifikasiManager {
     }
 
     public function getNotifikasi() {
-        $data = $this->database
-            ->getReference('notifikasi/' . $this->uid)
-            ->getValue();
+        $data = $this->database->getReference('notifikasi/' . $this->uid)->getValue();
         return is_array($data) ? $data : [];
     }
 
@@ -45,20 +41,28 @@ class NotifikasiManager {
         if (empty($notifikasi)) return [];
         
         usort($notifikasi, function($a, $b) {
-            $timeA = strtotime($a['created_at'] ?? '1970-01-01');
-            $timeB = strtotime($b['created_at'] ?? '1970-01-01');
-            return $timeB - $timeA;
+            return strtotime($b['created_at'] ?? '1970-01-01') - strtotime($a['created_at'] ?? '1970-01-01');
         });
         
         return array_slice($notifikasi, 0, $limit);
     }
 
+    // 🔥 PERBAIKAN: Tandai satu notifikasi sebagai dibaca
     public function markAsRead($notifId) {
-        return $this->database
+        if (!$notifId) return false;
+        
+        // Update di Firebase
+        $this->database
             ->getReference('notifikasi/' . $this->uid . '/' . $notifId . '/dibaca')
             ->set(true);
+        $this->database
+            ->getReference('notifikasi/' . $this->uid . '/' . $notifId . '/read_at')
+            ->set(date('Y-m-d H:i:s'));
+        
+        return true;
     }
 
+    // 🔥 PERBAIKAN: Tandai semua notifikasi sebagai dibaca
     public function markAllAsRead() {
         $notifikasi = $this->getNotifikasi();
         if (empty($notifikasi)) return true;
@@ -68,11 +72,22 @@ class NotifikasiManager {
             $this->database
                 ->getReference('notifikasi/' . $this->uid . '/' . $key . '/dibaca')
                 ->set(true);
+            $this->database
+                ->getReference('notifikasi/' . $this->uid . '/' . $key . '/read_at')
+                ->set(date('Y-m-d H:i:s'));
         }
         return true;
     }
 
-    // 🔥 PERBAIKAN: Kirim notifikasi dengan catatan
+    // 🔥 PERBAIKAN: Hapus notifikasi
+    public function deleteNotifikasi($notifId) {
+        if (!$notifId) return false;
+        $this->database
+            ->getReference('notifikasi/' . $this->uid . '/' . $notifId)
+            ->remove();
+        return true;
+    }
+
     public static function sendNotifikasi($database, $uid, $judul, $pesan, $link = '', $type = 'info', $catatan = '') {
         $notifData = [
             'judul' => $judul,
@@ -83,33 +98,12 @@ class NotifikasiManager {
             'created_at' => date('Y-m-d H:i:s'),
             'read_at' => null
         ];
-        
-        // 🔥 Tambahkan catatan jika ada
         if (!empty($catatan)) {
             $notifData['catatan'] = $catatan;
         }
-        
-        return $database
-            ->getReference('notifikasi/' . $uid)
-            ->push($notifData);
+        return $database->getReference('notifikasi/' . $uid)->push($notifData);
     }
 
-    public static function sendToAllAdmins($database, $judul, $pesan, $link = '', $type = 'info') {
-        $allUsers = $database->getReference('users')->getValue();
-        if (!is_array($allUsers) || empty($allUsers)) {
-            return false;
-        }
-        
-        foreach ($allUsers as $uid => $user) {
-            if (!is_array($user)) continue;
-            if (($user['role'] ?? '') === 'admin') {
-                self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type);
-            }
-        }
-        return true;
-    }
-
-    // 🔥 PERBAIKAN: Notifikasi pengajuan baru
     public static function notifikasiPengajuanBaru($database, $cutiData) {
         $judul = '📝 Pengajuan Cuti Baru';
         $pesan = $cutiData['user_name'] . ' mengajukan ' . $cutiData['jenis_cuti'] . ' (' . $cutiData['durasi'] . ' hari)';
@@ -118,38 +112,36 @@ class NotifikasiManager {
         return self::sendToAllAdmins($database, $judul, $pesan, $link, $type);
     }
 
-    // 🔥 PERBAIKAN: Notifikasi status berubah dengan catatan
     public static function notifikasiStatusBerubah($database, $uid, $cutiData, $statusBaru, $catatan = '') {
         $statusText = '';
         $type = 'info';
         switch ($statusBaru) {
-            case 'Disetujui':
-                $statusText = '✅ disetujui';
-                $type = 'success';
-                break;
-            case 'Ditolak':
-                $statusText = '❌ ditolak';
-                $type = 'danger';
-                break;
-            case 'Selesai':
-                $statusText = '📋 selesai';
-                $type = 'info';
-                break;
-            default:
-                $statusText = '📝 diupdate';
-                $type = 'info';
+            case 'Disetujui': $statusText = '✅ disetujui'; $type = 'success'; break;
+            case 'Ditolak': $statusText = '❌ ditolak'; $type = 'danger'; break;
+            case 'Selesai': $statusText = '📋 selesai'; $type = 'info'; break;
+            default: $statusText = '📝 diupdate'; $type = 'info';
         }
         
         $judul = '📢 Status Cuti Berubah';
         $pesan = 'Pengajuan ' . $cutiData['jenis_cuti'] . ' Anda ' . $statusText;
-        
-        // 🔥 Tambahkan catatan ke pesan jika ada
         if (!empty($catatan)) {
             $pesan .= '. Catatan: "' . $catatan . '"';
         }
-        
         $link = 'riwayat.php';
         return self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type, $catatan);
+    }
+
+    public static function sendToAllAdmins($database, $judul, $pesan, $link = '', $type = 'info') {
+        $allUsers = $database->getReference('users')->getValue();
+        if (!is_array($allUsers) || empty($allUsers)) return false;
+        
+        foreach ($allUsers as $uid => $user) {
+            if (!is_array($user)) continue;
+            if (($user['role'] ?? '') === 'admin') {
+                self::sendNotifikasi($database, $uid, $judul, $pesan, $link, $type);
+            }
+        }
+        return true;
     }
 }
 ?>

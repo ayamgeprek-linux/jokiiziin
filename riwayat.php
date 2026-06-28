@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: riwayat.php
  * FUNGSI: Riwayat Pengajuan Cuti
- * VERSION: 6.0 - Mobile Fully Fixed
+ * VERSION: 8.0 - Fixed Popup Modern
  * =====================================================
  */
 
@@ -65,7 +65,6 @@ include 'includes/header.php';
 /* ===== RESPONSIVE SHOW/HIDE ===== */
 @media (min-width: 769px) {
     #mobile-history-view { display: none !important; }
-    .mobile-nav-bar { display: none !important; }
 }
 @media (max-width: 768px) {
     #desktop-history-view { display: none !important; }
@@ -74,45 +73,26 @@ include 'includes/header.php';
 /* ===== MOBILE RIWAYAT ===== */
 @media (max-width: 768px) {
     * { box-sizing: border-box; }
-
-    body {
-        overflow-x: hidden;
-        width: 100%;
-    }
-
+    body { overflow-x: hidden; width: 100%; }
     #mobile-history-view {
         display: block !important;
         width: 100%;
         overflow-x: hidden;
         padding-bottom: 80px;
     }
-
-    /* Header */
     .mobile-riwayat-header {
         padding: 16px 16px 8px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-    }
-    .mobile-riwayat-header h2 {
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-    }
-    .mobile-riwayat-header .sub-info {
-        font-size: 12px;
-        color: var(--clr-muted);
-        margin-top: 2px;
-    }
-    .mobile-riwayat-header .avatar-wrapper {
-        display: flex;
-        align-items: center;
+        flex-wrap: wrap;
         gap: 8px;
-        flex-shrink: 0;
     }
+    .mobile-riwayat-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
+    .mobile-riwayat-header .sub-info { font-size: 12px; color: var(--clr-muted); margin-top: 2px; }
+    .mobile-riwayat-header .avatar-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .notif-btn {
-        width: 36px;
-        height: 36px;
+        width: 36px; height: 36px;
         border-radius: 50%;
         background: var(--clr-bg);
         border: 1px solid var(--clr-border);
@@ -124,8 +104,7 @@ include 'includes/header.php';
         flex-shrink: 0;
     }
     .avatar-small {
-        width: 36px;
-        height: 36px;
+        width: 36px; height: 36px;
         border-radius: 50%;
         background: var(--clr-primary);
         display: flex;
@@ -137,8 +116,6 @@ include 'includes/header.php';
         cursor: pointer;
         flex-shrink: 0;
     }
-
-    /* Search */
     .mobile-search-riwayat {
         display: flex;
         align-items: center;
@@ -160,14 +137,7 @@ include 'includes/header.php';
         min-width: 0;
     }
     .mobile-search-riwayat input::placeholder { color: #aaa; }
-
-    /* Container list */
-    .mobile-riwayat-container {
-        padding: 0 12px;
-        width: 100%;
-    }
-
-    /* Card riwayat */
+    .mobile-riwayat-container { padding: 0 12px; width: 100%; }
     .mobile-hist-card {
         width: 100%;
         margin: 0 0 10px 0;
@@ -178,12 +148,7 @@ include 'includes/header.php';
         cursor: pointer;
         transition: all .15s;
     }
-    .mobile-hist-card:active {
-        transform: scale(0.98);
-        background: var(--clr-bg);
-    }
-
-    /* Header card */
+    .mobile-hist-card:active { transform: scale(0.98); background: var(--clr-bg); }
     .mobile-hist-header {
         display: flex;
         align-items: center;
@@ -207,8 +172,6 @@ include 'includes/header.php';
         letter-spacing: 0.3px;
         flex-shrink: 0;
     }
-
-    /* Judul */
     .mobile-hist-title {
         font-size: 14px;
         font-weight: 700;
@@ -217,8 +180,6 @@ include 'includes/header.php';
         color: var(--clr-dark);
         line-height: 1.3;
     }
-
-    /* Meta info */
     .mobile-hist-meta {
         display: flex;
         gap: 14px;
@@ -232,8 +193,6 @@ include 'includes/header.php';
         gap: 3px;
     }
     .mobile-hist-meta span i { font-size: 13px; }
-
-    /* Catatan admin */
     .admin-note-mobile {
         margin-top: 8px;
         font-size: 11px;
@@ -246,8 +205,6 @@ include 'includes/header.php';
         line-height: 1.5;
     }
     .admin-note-mobile strong { color: var(--clr-dark); }
-
-    /* Link dokumen */
     .doc-link-mobile {
         margin-top: 6px;
         display: inline-flex;
@@ -259,31 +216,14 @@ include 'includes/header.php';
         font-weight: 500;
         padding: 4px 0;
     }
-
-    /* Empty state */
     .empty-state-mobile {
         text-align: center;
         padding: 40px 20px;
         color: var(--clr-muted);
     }
-    .empty-state-mobile i {
-        font-size: 48px;
-        display: block;
-        margin-bottom: 12px;
-        color: var(--clr-border);
-    }
-    .empty-state-mobile h4 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--clr-dark);
-        margin-bottom: 4px;
-    }
-    .empty-state-mobile p {
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    /* Stats grid mobile 2x2 */
+    .empty-state-mobile i { font-size: 48px; display: block; margin-bottom: 12px; color: var(--clr-border); }
+    .empty-state-mobile h4 { font-size: 16px; font-weight: 600; color: var(--clr-dark); margin-bottom: 4px; }
+    .empty-state-mobile p { font-size: 13px; margin-bottom: 16px; }
     .mobile-stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -305,16 +245,10 @@ include 'includes/header.php';
         line-height: 1.1;
         color: var(--clr-dark);
     }
-    .mobile-stat-card .stat-lbl {
-        font-size: 10px;
-        color: var(--clr-muted);
-        margin-top: 2px;
-    }
+    .mobile-stat-card .stat-lbl { font-size: 10px; color: var(--clr-muted); margin-top: 2px; }
     .mobile-stat-card.primary .stat-val { color: var(--clr-primary); }
     .mobile-stat-card.success .stat-val { color: var(--clr-success, #22c55e); }
     .mobile-stat-card.danger  .stat-val { color: var(--clr-danger,  #ef4444); }
-
-    /* Tombol ajukan cuti mobile */
     .mobile-ajukan-btn {
         display: flex;
         align-items: center;
@@ -333,8 +267,6 @@ include 'includes/header.php';
         transition: opacity .15s;
     }
     .mobile-ajukan-btn:active { opacity: 0.85; }
-
-    /* Section title */
     .mobile-section-title {
         padding: 0 12px;
         font-size: 13px;
@@ -344,8 +276,6 @@ include 'includes/header.php';
         letter-spacing: 0.5px;
         margin-bottom: 8px;
     }
-
-    /* Help card */
     .mobile-help-card {
         margin: 16px 12px 20px;
         background: var(--clr-surface);
@@ -355,18 +285,143 @@ include 'includes/header.php';
         text-align: center;
         width: calc(100% - 24px);
     }
+    .mobile-footer-txt { text-align: center; padding: 8px 16px 30px; font-size: 11px; color: var(--clr-muted); }
+    .page-with-mobile-nav .main-content { padding-bottom: 80px; }
+}
 
-    /* Footer */
-    .mobile-footer-txt {
-        text-align: center;
-        padding: 8px 16px 30px;
-        font-size: 11px;
-        color: var(--clr-muted);
-    }
+/* ===== MODAL MODERN ===== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-overlay.active {
+    display: flex;
+}
+.modal-box {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalIn 0.3s ease;
+}
+@keyframes modalIn {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--clr-border);
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.modal-header h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--clr-dark);
+}
+.modal-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--clr-bg);
+    color: var(--clr-muted);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.modal-close-btn:hover {
+    background: var(--clr-danger);
+    color: #fff;
+    transform: rotate(90deg);
+}
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    max-height: calc(80vh - 70px);
+}
+.modal-body .field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.modal-body .field-full {
+    grid-column: span 2;
+}
+.modal-body .field-label {
+    font-size: 11px;
+    color: var(--clr-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+.modal-body .field-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--clr-dark);
+    margin-top: 2px;
+    word-break: break-word;
+}
+.modal-body .field-value a {
+    color: var(--clr-primary);
+    text-decoration: underline;
+}
+.modal-body .note-box {
+    grid-column: span 2;
+    background: #f8f5f0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--clr-primary);
+}
+.modal-body .note-box .label {
+    font-size: 11px;
+    color: var(--clr-muted);
+    font-weight: 600;
+}
+.modal-body .note-box .text {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--clr-dark);
+}
 
-    .page-with-mobile-nav .main-content {
-        padding-bottom: 80px;
+@media (max-width: 480px) {
+    .modal-body .field-group {
+        grid-template-columns: 1fr;
     }
+    .modal-body .field-full {
+        grid-column: span 1;
+    }
+    .modal-box {
+        max-width: 100%;
+        margin: 10px;
+        border-radius: 12px;
+    }
+    .modal-header {
+        padding: 14px 16px;
+    }
+    .modal-header h3 { font-size: 16px; }
+    .modal-body { padding: 16px; }
 }
 </style>
 
@@ -477,6 +532,8 @@ include 'includes/header.php';
                 </div>
             </div>
         </div>
+
+        
     </main>
 </div>
 
@@ -485,17 +542,21 @@ include 'includes/header.php';
      ===================================================== -->
 <div id="mobile-history-view" class="page-with-mobile-nav">
 
-    <!-- HEADER -->
     <div class="mobile-riwayat-header">
         <div>
             <h2>📋 Riwayat Cuti</h2>
             <div class="sub-info">Sisa cuti: <strong><?= $sisaCuti ?></strong> hari</div>
         </div>
-       
+        <div class="avatar-wrapper">
+            <div class="notif-btn" onclick="showToast('Tidak ada notifikasi baru')">
+                <i class="ri-notification-3-line"></i>
+            </div>
+            <div class="avatar-small" onclick="window.location.href='profile.php'">
+                <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
+            </div>
         </div>
     </div>
 
-    <!-- STATISTIK GRID 2x2 -->
     <div class="mobile-stats-grid">
         <div class="mobile-stat-card">
             <div class="stat-val"><?= $stats['total'] ?></div>
@@ -515,18 +576,15 @@ include 'includes/header.php';
         </div>
     </div>
 
-    <!-- TOMBOL AJUKAN -->
     <button class="mobile-ajukan-btn" onclick="window.location.href='home.php#ajukan-cuti-mobile'">
         <i class="ri-add-line"></i> Ajukan Cuti Baru
     </button>
 
-    <!-- SEARCH -->
     <div class="mobile-search-riwayat">
         <i class="ri-search-line" style="color:var(--clr-muted);flex-shrink:0;"></i>
         <input type="text" placeholder="Cari pengajuan cuti..." id="mobile-search-history">
     </div>
 
-    <!-- LIST RIWAYAT -->
     <div class="mobile-section-title">Daftar Pengajuan</div>
     <div class="mobile-riwayat-container">
         <?php if (empty($permohonan)): ?>
@@ -566,7 +624,6 @@ include 'includes/header.php';
         <?php endif; ?>
     </div>
 
-    <!-- HELP CARD -->
     <div class="mobile-help-card">
         <div style="width:44px;height:44px;background:var(--clr-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--clr-primary);margin:0 auto 10px;">
             <i class="ri-question-line"></i>
@@ -586,17 +643,19 @@ include 'includes/header.php';
 </div>
 
 <!-- =====================================================
-     MODAL DETAIL
+     MODAL DETAIL - MODERN
      ===================================================== -->
-<div id="detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#fff;border-radius:var(--r-xl);max-width:500px;width:100%;padding:28px;box-shadow:var(--shadow-lg);max-height:80vh;overflow-y:auto;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;">Detail Pengajuan</h3>
-            <button onclick="closeDetailModal()" style="background:var(--clr-bg);border:1px solid var(--clr-border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+<div id="detail-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📋 Detail Pengajuan</h3>
+            <button class="modal-close-btn" onclick="closeDetailModal()">
                 <i class="ri-close-line"></i>
             </button>
         </div>
-        <div id="detail-content"><p style="text-align:center;color:var(--clr-muted);">Loading...</p></div>
+        <div class="modal-body" id="detail-content">
+            <p style="text-align:center;color:var(--clr-muted);">Loading...</p>
+        </div>
     </div>
 </div>
 
@@ -627,48 +686,119 @@ window.addEventListener('resize', applyView);
 // ===== DETAIL MODAL =====
 function showDetail(key) {
     const data = allData[key];
-    if (!data) { showToast('Data tidak ditemukan', 'ri-error-warning-line'); return; }
+    if (!data) { 
+        showToast('Data tidak ditemukan', 'ri-error-warning-line'); 
+        return; 
+    }
 
-    const html = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
-            <div><strong>ID</strong><br>${data.id || '-'}</div>
-            <div><strong>Status</strong><br>${data.status || '-'}</div>
-            <div><strong>Nama</strong><br>${data.user_name || '-'}</div>
-            <div><strong>NIP</strong><br>${data.nip || '-'}</div>
-            <div><strong>Jabatan</strong><br>${data.jabatan || '-'}</div>
-            <div><strong>Departemen</strong><br>${data.departemen || '-'}</div>
-            <div><strong>Jenis Cuti</strong><br>${data.jenis_cuti || '-'}</div>
-            <div><strong>Durasi</strong><br>${data.durasi || 0} hari</div>
-            <div style="grid-column:span 2"><strong>Tanggal</strong><br>${data.tanggal_mulai || '-'} s/d ${data.tanggal_selesai || '-'}</div>
-            <div style="grid-column:span 2"><strong>Alasan</strong><br>${data.alasan || '-'}</div>
-            ${data.catatan_admin ? `
-            <div style="grid-column:span 2;background:#f8f5f0;padding:10px 12px;border-radius:6px;border-left:3px solid var(--clr-primary)">
-                <strong style="color:var(--clr-muted)">📝 Catatan Admin:</strong>
-                <div style="margin-top:4px">${data.catatan_admin}</div>
-            </div>` : ''}
-            ${data.reviewed_by ? `<div><strong>Reviewer</strong><br>${data.reviewed_by}</div>` : ''}
-            ${data.reviewed_at ? `<div><strong>Tgl Review</strong><br>${data.reviewed_at}</div>` : ''}
-            <div style="grid-column:span 2"><strong>Tgl Pengajuan</strong><br>${data.created_at || '-'}</div>
-            ${data.dokumen ? `
-            <div style="grid-column:span 2;margin-top:4px">
+    // Build HTML untuk modal
+    let html = `<div class="field-group">`;
+    
+    const fields = [
+        ['ID', data.id || '-'],
+        ['Status', data.status || '-'],
+        ['Nama', data.user_name || '-'],
+        ['NIP', data.nip || '-'],
+        ['Jabatan', data.jabatan || '-'],
+        ['Departemen', data.departemen || '-'],
+        ['Jenis Cuti', data.jenis_cuti || '-'],
+        ['Durasi', (data.durasi || 0) + ' hari'],
+    ];
+    
+    fields.forEach(f => {
+        html += `
+            <div>
+                <div class="field-label">${f[0]}</div>
+                <div class="field-value">${f[1]}</div>
+            </div>
+        `;
+    });
+    
+    // Tanggal (full width)
+    html += `
+        <div class="field-full">
+            <div class="field-label">Tanggal</div>
+            <div class="field-value">${data.tanggal_mulai || '-'} s/d ${data.tanggal_selesai || '-'}</div>
+        </div>
+        <div class="field-full">
+            <div class="field-label">Alasan</div>
+            <div class="field-value">${data.alasan || '-'}</div>
+        </div>
+    `;
+    
+    // Catatan Admin
+    if (data.catatan_admin) {
+        html += `
+            <div class="field-full note-box">
+                <div class="label">📝 Catatan Admin</div>
+                <div class="text">${data.catatan_admin}</div>
+            </div>
+        `;
+    }
+    
+    // Reviewer
+    if (data.reviewed_by) {
+        html += `
+            <div>
+                <div class="field-label">Reviewer</div>
+                <div class="field-value">${data.reviewed_by}</div>
+            </div>
+        `;
+    }
+    if (data.reviewed_at) {
+        html += `
+            <div>
+                <div class="field-label">Tgl Review</div>
+                <div class="field-value">${data.reviewed_at}</div>
+            </div>
+        `;
+    }
+    
+    // Tanggal Pengajuan
+    html += `
+        <div class="field-full">
+            <div class="field-label">Tanggal Pengajuan</div>
+            <div class="field-value">${data.created_at || '-'}</div>
+        </div>
+    `;
+    
+    // Dokumen
+    if (data.dokumen) {
+        html += `
+            <div class="field-full" style="margin-top:8px;">
                 <a href="${data.dokumen}" target="_blank" class="btn btn-outline btn-sm" style="width:100%;text-align:center;font-size:12px;">
                     <i class="ri-file-pdf-line"></i> Lihat Dokumen
                 </a>
-            </div>` : ''}
-        </div>`;
-
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    
     document.getElementById('detail-content').innerHTML = html;
-    document.getElementById('detail-modal').style.display = 'flex';
+    document.getElementById('detail-modal').classList.add('active');
 }
 
 function closeDetailModal() {
-    document.getElementById('detail-modal').style.display = 'none';
+    document.getElementById('detail-modal').classList.remove('active');
 }
-document.addEventListener('click', e => {
-    if (e.target === document.getElementById('detail-modal')) closeDetailModal();
+
+// Close on backdrop click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('detail-modal');
+    if (modal && e.target === modal) {
+        closeDetailModal();
+    }
 });
 
-// ===== FILTER TAB (desktop) =====
+// Close on ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDetailModal();
+    }
+});
+
+// ===== FILTER =====
 document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -680,7 +810,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     });
 });
 
-// ===== SEARCH MOBILE =====
+// ===== SEARCH =====
 document.getElementById('mobile-search-history')?.addEventListener('input', function() {
     const q = this.value.toLowerCase();
     document.querySelectorAll('.mobile-hist-card').forEach(card => {

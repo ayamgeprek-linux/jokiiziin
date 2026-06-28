@@ -3,17 +3,8 @@
  * =====================================================
  * FILE: login.php
  * FUNGSI: Halaman Login dan Registrasi
+ * VERSION: 2.0 - Fixed
  * =====================================================
- * 
- * @package doret-cuti
- * @version 1.0.0
- * 
- * FITUR:
- * 1. Login dengan Email + Password (Firebase Auth)
- * 2. Registrasi akun baru
- * 3. Redirect ke admin.php jika role admin
- * 4. Redirect ke home.php jika role user
- * 5. Tampilan desktop + mobile (design TETAP SAMA)
  */
 
 require_once 'config/firebase.php';
@@ -40,14 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    // Validasi input
     if (empty($email) || empty($password)) {
         $error = 'Mohon isi email dan password';
     } else {
         $userData = $auth->login($email, $password);
         
         if ($userData) {
-            // Login sukses
             if ($userData['role'] === 'admin') {
                 redirect('admin.php');
             } else {
@@ -94,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>doret.id — Manajemen Cuti Karyawan</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>Magang.usg — Manajemen Cuti Karyawan</title>
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
 </head>
 <body>
@@ -108,17 +97,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <div class="login-hero">
         <nav class="login-nav">
             <span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff">
-                Magang<span style="color:var(--clr-primary)">usg</span>
+                Magang<span style="color:var(--clr-primary)">.usg</span>
             </span>
-            <a href="#">.</a>
-            <a href="#">.</a>
-            <a href="#">.</a>
-            <a href="#">.</a>
+            <a href="#">Beranda</a>
+            <a href="#">Informasi</a>
+            <a href="#">Tata Cara</a>
+            <a href="#">Kontak Kami</a>
             <a href="#">···</a>
         </nav>
         <div class="login-hero-content">
-            <span class="login-eyebrow">Edisi 2026</span>
-            <h1>Manajemen Cuti<br><span class="brand">Magang usg</span></h1>
+            <span class="login-eyebrow">Edisi 2025</span>
+            <h1>Manajemen Cuti<br><span class="brand">Magang.usg</span></h1>
             <p>Sistem manajemen cuti karyawan yang modern, terintegrasi, dan sepenuhnya transparan untuk mendukung produktivitas tim Anda.</p>
             <div class="login-features">
                 <div class="login-feature">
@@ -137,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 </div>
             </div>
         </div>
-        <div class="login-hero-footer">.</div>
+        <div class="login-hero-footer">COORD: -6.2088° S, 106.8456° E | HR CORE V4.2</div>
     </div>
 
     <!-- RIGHT PANEL (desktop login card) -->
@@ -178,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <input type="hidden" name="login" value="1">
                     
                     <div class="form-group">
-                        <label class="form-label">Email Perusahaan</label>
+                        <label class="form-label">Email</label>
                         <input type="email" name="email" class="form-control" placeholder="nama@perusahaan.id" value="<?= escape($_POST['email'] ?? '') ?>" required>
                     </div>
                     
@@ -195,25 +184,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         </div>
                     </div>
                     
-                    <label class="checkbox-row">
-                        <input type="checkbox" style="accent-color:var(--clr-primary)">
-                        <span>Ingat saya di perangkat ini</span>
-                    </label>
-                    
                     <button type="submit" class="btn btn-primary btn-full">
-                        Masuk ke Dashboard <i class="ri-arrow-right-line"></i>
+                        Masuk <i class="ri-arrow-right-line"></i>
                     </button>
                 </form>
-                
-                <div class="login-divider">Atau gunakan</div>
-                <div class="sso-row">
-                    <button class="btn-sso"><img src="https://www.google.com/favicon.ico" alt="G"> Google</button>
-                    <button class="btn-sso"><div class="satusehat-icon"><i class="ri-hospital-line" style="font-size:10px;"></i></div> SATUSEHAT</button>
-                </div>
             </div>
             
             <!-- ===========================================
-                 FORM DAFTAR
+                 FORM DAFTAR - EMAIL PERUSAHAAN DIHAPUS
                  =========================================== -->
             <div id="form-daftar" class="register-form" style="display:none;flex-direction:column;gap:16px;">
                 <form method="POST" action="">
@@ -224,9 +202,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         <input type="text" name="reg_name" class="form-control" placeholder="Nama sesuai identitas" required>
                     </div>
                     
+                    <!-- 🔥 EMAIL PERUSAHAAN DIHAPUS -->
+                    <!-- LANGSUNG PAKAI EMAIL BIASA -->
                     <div class="form-group">
-                        <label class="form-label">Email Perusahaan <span style="color:red;">*</span></label>
-                        <input type="email" name="reg_email" class="form-control" placeholder="nama@perusahaan.id" required>
+                        <label class="form-label">Email <span style="color:red;">*</span></label>
+                        <input type="email" name="reg_email" class="form-control" placeholder="email@domain.com" required>
                     </div>
                     
                     <div class="form-group">
@@ -246,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     
                     <div class="form-group">
                         <label class="form-label">Kata Sandi <span style="color:red;">*</span></label>
-                        <input type="password" name="reg_password" class="form-control" placeholder="Min. 8 karakter" required minlength="6">
+                        <input type="password" name="reg_password" class="form-control" placeholder="Min. 6 karakter" required minlength="6">
                     </div>
                     
                     <div class="form-group">
@@ -262,13 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         </div>
 
         <!-- =====================================================
-             MOBILE VERSION (hidden on desktop)
+             MOBILE VERSION
              ===================================================== -->
         <div class="mobile-login-show" style="display:none;flex-direction:column;width:100%;min-height:100vh;">
             <div class="mobile-login-wrap" style="display:flex;flex-direction:column;min-height:100vh;">
                 <div class="mobile-app-header">
                     <div class="mobile-app-icon"><i class="ri-building-2-line"></i></div>
-                    <div class="mobile-app-name">doret<span style="color:var(--clr-primary)">.id</span></div>
+                    <div class="mobile-app-name">Magang<span style="color:var(--clr-primary)">.usg</span></div>
                     <div class="mobile-app-sub">Manajemen Cuti Karyawan</div>
                 </div>
                 
@@ -282,6 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         </div>
                     <?php endif; ?>
                     
+                    <!-- MOBILE LOGIN -->
                     <form method="POST" action="">
                         <input type="hidden" name="login" value="1">
                         <div class="login-form">
@@ -308,18 +289,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             </div>
                             
                             <button type="submit" class="btn btn-primary btn-full" style="border-radius:var(--r-md);letter-spacing:.5px;font-size:13px;padding:14px;">
-                                MASUK SEKARANG <i class="ri-login-box-line"></i>
+                                MASUK <i class="ri-login-box-line"></i>
                             </button>
                         </div>
                     </form>
                     
-                    <div class="login-divider">Atau masuk dengan</div>
-                    <button class="btn-sso" style="width:100%;padding:12px;margin-bottom:8px;">
-                        <img src="https://www.google.com/favicon.ico" alt="G"> GOOGLE
-                    </button>
-                    <button class="btn-sso" style="width:100%;padding:12px;">
-                        <div class="satusehat-icon"><i class="ri-hospital-line" style="font-size:10px;"></i></div> email
-                    </button>
+                    <!-- 🔥 GOOGLE & SATUSEHAT DIHAPUS -->
+                    <!-- Tidak ada lagi tombol Google & SATUSEHAT -->
                     
                     <p class="login-footer-text" style="margin-top:16px;">
                         Belum memiliki akun? 
@@ -335,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <a href="#">Kontak</a>
                 </div>
                 <div style="text-align:center;padding:8px;font-size:11px;color:var(--clr-muted);background:#F2F2F2;">
-                    © <?= date('Y') ?>magangusg &nbsp;·&nbsp; v2.4.0
+                    © <?= date('Y') ?> Magang.usg &nbsp;·&nbsp; v2.5.0
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 <?php
 /**
- * FILE: ajax_mark_all_read.php
- * FUNGSI: Tandai semua notifikasi sebagai sudah dibaca via AJAX
+ * FILE: ajax_delete_notif.php
+ * FUNGSI: Hapus notifikasi via AJAX
  */
 
 session_start();
@@ -17,8 +17,15 @@ if (!$auth->isLoggedIn()) {
 }
 
 $uid = $auth->getCurrentUid();
+$id = $_POST['id'] ?? '';
+
+if (empty($id)) {
+    echo json_encode(['success' => false, 'message' => 'ID required']);
+    exit;
+}
+
 $notifManager = new NotifikasiManager($database, $uid);
-$result = $notifManager->markAllAsRead();
+$result = $notifManager->deleteNotifikasi($id);
 
 echo json_encode(['success' => $result]);
 ?>

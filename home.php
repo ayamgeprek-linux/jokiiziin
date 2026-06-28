@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: home.php
  * FUNGSI: Dashboard User
- * VERSION: 4.0 - With Note & Upload Fix
+ * VERSION: 7.0 - With Supabase Upload
  * =====================================================
  */
 
@@ -11,6 +11,7 @@ require_once 'config/firebase.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_once 'includes/notifikasi.php';
+require_once 'config/supabase.php';
 
 requireLogin($auth);
 
@@ -70,37 +71,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajukan_cuti'])) {
             'alasan' => $alasan,
             'status' => 'Menunggu',
             'dokumen' => '',
-            'catatan_admin' => '', // 🔥 Untuk menyimpan catatan dari admin
+            'catatan_admin' => '',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
         
-        // 🔥 UPLOAD DOKUMEN KE FIREBASE STORAGE
+        // =====================================================
+        // 🔥 UPLOAD DOKUMEN KE SUPABASE STORAGE
+        // =====================================================
         if ($dokumen && $dokumen['error'] === 0) {
-            $uploadDir = __DIR__ . '/uploads/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $fileName = $uid . '_' . date('Ymd_His') . '_' . basename($dokumen['name']);
-            $filePath = $uploadDir . $fileName;
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+            $maxSize = 5 * 1024 * 1024; // 5MB
             
-            if (move_uploaded_file($dokumen['tmp_name'], $filePath)) {
-                $cutiData['dokumen'] = 'uploads/' . $fileName;
+            if (!in_array($dokumen['type'], $allowedTypes)) {
+                $errors[] = 'Format file tidak didukung. Gunakan PDF, JPG, atau PNG (type: ' . $dokumen['type'] . ')';
+                error_log('❌ Format tidak didukung: ' . $dokumen['type']);
+            } elseif ($dokumen['size'] > $maxSize) {
+                $errors[] = 'Ukuran file maksimal 5MB (size: ' . round($dokumen['size'] / 1024 / 1024, 2) . 'MB)';
+                error_log('❌ File terlalu besar: ' . $dokumen['size']);
+            } else {
+                // 🔥 Upload ke Supabase
+                $extension = pathinfo($dokumen['name'], PATHINFO_EXTENSION);
+                $fileName = $uid . '_' . date('Ymd_His') . '.' . $extension;
+                $destinationPath = 'cuti/' . $fileName;
+                
+                error_log('=== UPLOAD KE SUPABASE ===');
+                error_log('File: ' . $dokumen['name']);
+                error_log('Destination: ' . $destinationPath);
+                error_log('Size: ' . $dokumen['size']);
+                
+                $fileUrl = SupabaseConfig::uploadFile($dokumen['tmp_name'], $destinationPath);
+                
+                if ($fileUrl) {
+                    $cutiData['dokumen'] = $fileUrl;
+                    error_log('✅ Upload berhasil: ' . $fileUrl);
+                } else {
+                    $errorDetail = SupabaseConfig::getLastError();
+                    $errors[] = '❌ Gagal upload: ' . $errorDetail;
+                    error_log('❌ Upload gagal: ' . $errorDetail);
+                }
             }
         }
         
-        try {
-            $database->getReference('permohonan')->push($cutiData);
-            
-            // 🔥 KIRIM NOTIFIKASI KE ADMIN
-            NotifikasiManager::notifikasiPengajuanBaru($database, $cutiData);
-            
-            $_SESSION['flash_message'] = 'Pengajuan cuti berhasil dikirim!';
-            redirect('home.php');
-        } catch (Exception $e) {
-            $error = 'Gagal menyimpan data: ' . $e->getMessage();
-            error_log('ERROR SIMPAN: ' . $e->getMessage());
+        if (empty($errors)) {
+            try {
+                $database->getReference('permohonan')->push($cutiData);
+                NotifikasiManager::notifikasiPengajuanBaru($database, $cutiData);
+                $_SESSION['flash_message'] = 'Pengajuan cuti berhasil dikirim!';
+                redirect('home.php');
+            } catch (Exception $e) {
+                $error = 'Gagal menyimpan data: ' . $e->getMessage();
+                error_log('❌ ERROR SIMPAN: ' . $e->getMessage());
+            }
+        } else {
+            $error = implode(', ', $errors);
+            error_log('❌ VALIDASI ERROR: ' . $error);
         }
     } else {
         $error = implode(', ', $errors);
+        error_log('❌ FORM ERROR: ' . $error);
     }
 }
 
@@ -108,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajukan_cuti'])) {
 // AMBIL DATA DARI FIREBASE
 // =====================================================
 
-// Ambil SEMUA data, lalu filter manual
 $allPermohonan = $database->getReference('permohonan')->getValue();
 $permohonan = [];
 
@@ -177,6 +205,7 @@ include 'includes/header.php';
         <div class="sidebar-item active"><i class="ri-dashboard-line"></i> Dashboard</div>
         <div class="sidebar-item" onclick="document.getElementById('ajukan-cuti').scrollIntoView()"><i class="ri-add-circle-line"></i> Ajukan Cuti</div>
         <div class="sidebar-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
+        <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
             <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
             <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
@@ -191,7 +220,6 @@ include 'includes/header.php';
                 <h2>Selamat Datang, <?= escape($user['name'] ?? 'User') ?></h2>
                 <p>Kelola pengajuan cuti Anda dengan sistem manajemen karyawan modern. Pantau status cuti secara real-time.</p>
                 
-                <!-- 🔥 NOTIFIKASI DI DASHBOARD -->
                 <?php if ($stats['menunggu'] > 0): ?>
                     <div style="background:rgba(184,134,11,.2);border:1px solid var(--clr-primary);border-radius:var(--r-md);padding:10px 16px;margin-top:12px;display:flex;align-items:center;gap:10px;">
                         <i class="ri-notification-3-line" style="color:var(--clr-primary);font-size:20px;"></i>
@@ -292,6 +320,7 @@ include 'includes/header.php';
             <?php if (isset($error)): ?>
                 <div style="background:#FDECEA;border:1px solid #C0392B;border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;color:#C0392B;font-size:13px;">
                     <i class="ri-error-warning-line"></i> <?= escape($error) ?>
+                    <br><small style="color:#666;">Cek file <strong>error_log</strong> untuk detail</small>
                 </div>
             <?php endif; ?>
             
@@ -375,16 +404,12 @@ include 'includes/header.php';
                                             (<?= $activity['durasi'] ?? 0 ?> hari)
                                         </span>
                                     </div>
-                                    
-                                    <!-- 🔥 TAMPILKAN CATATAN DARI ADMIN -->
                                     <?php if (!empty($activity['catatan_admin'])): ?>
                                         <div style="background:var(--clr-bg);padding:8px 12px;border-radius:var(--r-sm);margin-top:6px;font-size:12px;border-left:3px solid var(--clr-primary);">
                                             <strong style="color:var(--clr-muted);">📝 Catatan Admin:</strong>
                                             <span><?= escape($activity['catatan_admin']) ?></span>
                                         </div>
                                     <?php endif; ?>
-                                    
-                                    <!-- 🔥 TAMPILKAN DOKUMEN JIKA ADA -->
                                     <?php if (!empty($activity['dokumen'])): ?>
                                         <div style="margin-top:4px;">
                                             <a href="<?= escape($activity['dokumen']) ?>" target="_blank" style="font-size:12px;color:var(--clr-primary);text-decoration:underline;">
@@ -392,7 +417,6 @@ include 'includes/header.php';
                                             </a>
                                         </div>
                                     <?php endif; ?>
-                                    
                                     <div style="font-size:11px;color:var(--clr-muted);margin-top:2px;">
                                         <?= formatTanggalWaktu($activity['created_at'] ?? '') ?>
                                     </div>
@@ -403,7 +427,6 @@ include 'includes/header.php';
                 </div>
             </div>
             
-            <!-- Side Info -->
             <div style="display:flex;flex-direction:column;gap:16px;">
                 <div class="help-card">
                     <div class="help-icon"><i class="ri-customer-service-2-line"></i></div>
@@ -503,7 +526,6 @@ include 'includes/header.php';
         </div>
     </div>
     
-    <!-- Mobile Form Ajukan Cuti -->
     <div id="ajukan-cuti-mobile" style="padding:0 16px;margin-bottom:20px;scroll-margin-top:20px;">
         <div class="mobile-section-label">Ajukan Cuti</div>
         <div class="card" style="padding:16px;">
@@ -543,7 +565,6 @@ include 'includes/header.php';
         </div>
     </div>
     
-    <!-- Aktivitas Terbaru Mobile -->
     <div class="mobile-activity-list">
         <div class="mobile-activity-header">
             <h4>Aktivitas Terakhir</h4>
@@ -570,12 +591,16 @@ include 'includes/header.php';
                                 <?= $activity['status'] ?? 'Menunggu' ?>
                             </span>
                         </div>
-                        <!-- 🔥 Catatan Admin di Mobile -->
                         <?php if (!empty($activity['catatan_admin'])): ?>
                             <div style="background:var(--clr-bg);padding:6px 10px;border-radius:var(--r-sm);margin-top:4px;font-size:11px;border-left:2px solid var(--clr-primary);">
                                 <strong style="color:var(--clr-muted);">📝 Catatan:</strong>
                                 <span><?= escape($activity['catatan_admin']) ?></span>
                             </div>
+                        <?php endif; ?>
+                        <?php if (!empty($activity['dokumen'])): ?>
+                            <a href="<?= escape($activity['dokumen']) ?>" target="_blank" style="font-size:11px;color:var(--clr-primary);text-decoration:underline;display:inline-block;margin-top:2px;">
+                                <i class="ri-file-pdf-line"></i> Lihat Dokumen
+                            </a>
                         <?php endif; ?>
                     </div>
                     <div class="ma-time"><?= formatTanggal($activity['created_at'] ?? '') ?></div>
@@ -589,14 +614,10 @@ include 'includes/header.php';
 
 <!-- Mobile Nav -->
 <nav class="mobile-nav-bar">
-    <button class="mobile-nav-item active"><i class="ri-dashboard-line"></i>Dashboard</button>
-    <button class="mobile-nav-item" onclick="document.getElementById('ajukan-cuti-mobile').scrollIntoView()">
-        <i class="ri-add-circle-line"></i>Ajukan
-    </button>
-    <button class="mobile-nav-item" onclick="window.location.href='riwayat.php'">
-        <i class="ri-history-line"></i>Riwayat
-    </button>
-    <button class="mobile-nav-item"><i class="ri-user-line"></i>Profil</button>
+    <button class="mobile-nav-item active" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
+    <button class="mobile-nav-item" onclick="document.getElementById('ajukan-cuti-mobile').scrollIntoView()"><i class="ri-add-circle-line"></i>Ajukan</button>
+    <button class="mobile-nav-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i>Riwayat</button>
+    <button class="mobile-nav-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i>Profil</button>
 </nav>
 
 <!-- Global Toast -->
