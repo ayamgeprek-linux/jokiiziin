@@ -7,10 +7,18 @@
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
 
+if (!$auth->isLoggedIn()) {
+    header('Location: ../auth/login.php');
+    exit;
+}
+if (!$auth->isAdmin()) {
+    header('Location: ../user/index.php');
+    exit;
+}
 requireAdmin($auth);
 
 $database = FirebaseConfig::getDatabase();
@@ -791,7 +799,7 @@ $html .= '
         <button class="btn btn-primary" onclick="window.print()">
             🖨️ Cetak / Save as PDF
         </button>
-        <button class="btn btn-secondary" onclick="window.location.href='admin_laporan.php'">
+        <button class="btn btn-secondary" onclick="window.location.href='laporan.php'">
             ⬅️ Kembali
         </button>
         <button class="btn btn-success" onclick="window.location.reload()">
@@ -814,3 +822,4 @@ $html .= '
 
 </body>
 </html>
+

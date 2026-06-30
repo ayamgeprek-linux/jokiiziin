@@ -7,11 +7,17 @@
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
-require_once 'includes/notifikasi.php';
-require_once 'config/supabase.php';
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/notifikasi.php';
+require_once __DIR__ . '/../config/supabase.php';
+
+if (!$auth->isLoggedIn()) {
+    header('Location: ../auth/login.php');
+    exit;
+}
+
 
 requireLogin($auth);
 
@@ -161,7 +167,7 @@ $sisaCuti = getSisaCuti($uid, $database);
 $jenisCutiList = getJenisCuti();
 
 $currentPage = 'home';
-include 'includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- =====================================================
@@ -394,8 +400,8 @@ include 'includes/header.php';
         <div class="sidebar-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
         <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
-            <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
-            <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
+          
+            <div class="sidebar-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
         </div>
     </aside>
 
@@ -803,4 +809,5 @@ include 'includes/header.php';
 <!-- Global Toast -->
 <div id="global-toast" class="toast-notif" style="display:none;"></div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
+

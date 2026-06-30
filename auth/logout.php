@@ -1,16 +1,15 @@
 <?php
 /**
  * =====================================================
- * FILE: logout.php
- * FUNGSI: Proses logout dan menghapus session
+ * FILE: auth/logout.php
+ * FUNGSI: Proses Logout
  * =====================================================
- * 
- * @package doret-cuti
- * @version 1.0.0
  */
 
 session_start();
 session_destroy();
-header('Location: login.php');
+
+// Redirect ke login
+header('Location: ../auth/login.php');
 exit;
 ?>

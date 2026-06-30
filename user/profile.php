@@ -7,9 +7,14 @@
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (!$auth->isLoggedIn()) {
+    header('Location: ../auth/login.php');
+    exit;
+}
 
 // Cek login dulu
 requireLogin($auth);
@@ -29,7 +34,7 @@ if ($isAdmin && isset($_SESSION['user'])) {
 $sisaCuti = getSisaCuti($uid, $database);
 
 $currentPage = 'profile';
-include 'includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- =====================================================
@@ -117,18 +122,18 @@ include 'includes/header.php';
             <div class="sidebar-item active"><i class="ri-user-line"></i> Profil</div>
             <div class="sidebar-item"><i class="ri-user-settings-line"></i> Kelola User</div>
             <div class="sidebar-bottom">
-                <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
-                <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
+                
+                <div class="sidebar-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
             </div>
         <?php else: ?>
             <!-- Menu User -->
-            <div class="sidebar-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i> Dashboard</div>
+            <div class="sidebar-item" onclick="window.location.href='index.php'"><i class="ri-dashboard-line"></i> Dashboard</div>
             <div class="sidebar-item" onclick="window.location.href='home.php#ajukan-cuti'"><i class="ri-add-circle-line"></i> Ajukan Cuti</div>
             <div class="sidebar-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
             <div class="sidebar-item active"><i class="ri-user-line"></i> Profil</div>
             <div class="sidebar-bottom">
-                <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
-                <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
+                
+                <div class="sidebar-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
             </div>
         <?php endif; ?>
     </aside>
@@ -179,7 +184,7 @@ include 'includes/header.php';
                             <i class="ri-file-search-line"></i> Kembali ke Admin
                         </button>
                     <?php endif; ?>
-                    <button class="btn btn-danger" style="background:var(--clr-danger);color:#fff;" onclick="if(confirm('Yakin ingin logout?')) window.location.href='logout.php'">
+                    <button class="btn btn-danger" style="background:var(--clr-danger);color:#fff;" onclick="if(confirm('Yakin ingin logout?')) window.location.href='../auth/logout.php'">
                         <i class="ri-logout-box-line"></i> Logout
                     </button>
                 </div>
@@ -198,13 +203,13 @@ include 'includes/header.php';
         <button class="mobile-nav-item" onclick="window.location.href='admin_riwayat.php'"><i class="ri-history-line"></i>Riwayat</button>
         <button class="mobile-nav-item" onclick="window.location.href='admin_laporan.php'"><i class="ri-file-chart-line"></i>Laporan</button>
         <button class="mobile-nav-item active"><i class="ri-user-line"></i>Profil</button>
-        <button class="mobile-nav-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i>Keluar</button>
+        <button class="mobile-nav-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i>Keluar</button>
     <?php else: ?>
         <!-- User Mobile -->
-        <button class="mobile-nav-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
+        <button class="mobile-nav-item" onclick="window.location.href='index.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
         <button class="mobile-nav-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i>Riwayat</button>
         <button class="mobile-nav-item active"><i class="ri-user-line"></i>Profil</button>
-        <button class="mobile-nav-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i>Keluar</button>
+        <button class="mobile-nav-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i>Keluar</button>
     <?php endif; ?>
 </nav>
 
@@ -222,4 +227,5 @@ function showToast(msg, icon = 'ri-information-line') {
 }
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
+

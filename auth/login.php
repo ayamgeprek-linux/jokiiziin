@@ -1,22 +1,25 @@
 <?php
 /**
  * =====================================================
- * FILE: login.php
+ * FILE: auth/login.php
  * FUNGSI: Halaman Login dan Registrasi
- * VERSION: 2.0 - Fixed
+ * VERSION: 3.0 - Fixed Path
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+// 🔥 FIX PATH - Naik satu level ke root
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 // Jika sudah login, redirect sesuai role
 if ($auth->isLoggedIn()) {
     if ($auth->isAdmin()) {
-        redirect('admin.php');
+        header('Location: ../admin/index.php');
+        exit;
     } else {
-        redirect('home.php');
+        header('Location: ../user/index.php');
+        exit;
     }
 }
 
@@ -38,9 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         
         if ($userData) {
             if ($userData['role'] === 'admin') {
-                redirect('admin.php');
+                header('Location: ../admin/index.php');
+                exit;
             } else {
-                redirect('home.php');
+                header('Location: ../user/index.php');
+                exit;
             }
         } else {
             $error = 'Email atau password salah!';
@@ -60,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $jabatan = trim($_POST['reg_jabatan'] ?? '');
     $departemen = trim($_POST['reg_departemen'] ?? '');
     
-    // Validasi
     if (empty($name) || empty($email) || empty($password)) {
         $error = 'Mohon isi semua field yang wajib';
     } elseif ($password !== $password_confirm) {
@@ -84,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Magang.usg — Manajemen Cuti Karyawan</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
 </head>
 <body>
@@ -99,7 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             <span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff">
                 Magang<span style="color:var(--clr-primary)">.usg</span>
             </span>
-           
         </nav>
         <div class="login-hero-content">
             <span class="login-eyebrow">Edisi 2025</span>
@@ -122,7 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 </div>
             </div>
         </div>
-       
     </div>
 
     <!-- RIGHT PANEL (desktop login card) -->
@@ -187,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             </div>
             
             <!-- ===========================================
-                 FORM DAFTAR - EMAIL PERUSAHAAN DIHAPUS
+                 FORM DAFTAR
                  =========================================== -->
             <div id="form-daftar" class="register-form" style="display:none;flex-direction:column;gap:16px;">
                 <form method="POST" action="">
@@ -198,8 +200,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         <input type="text" name="reg_name" class="form-control" placeholder="Nama sesuai identitas" required>
                     </div>
                     
-                    <!-- 🔥 EMAIL PERUSAHAAN DIHAPUS -->
-                    <!-- LANGSUNG PAKAI EMAIL BIASA -->
                     <div class="form-group">
                         <label class="form-label">Email <span style="color:red;">*</span></label>
                         <input type="email" name="reg_email" class="form-control" placeholder="email@domain.com" required>
@@ -290,9 +290,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         </div>
                     </form>
                     
-                    <!-- 🔥 GOOGLE & SATUSEHAT DIHAPUS -->
-                    <!-- Tidak ada lagi tombol Google & SATUSEHAT -->
-                    
                     <p class="login-footer-text" style="margin-top:16px;">
                         Belum memiliki akun? 
                         <a href="#" class="link-muted" onclick="document.querySelector('.tab-btn:last-child').click();return false;">
@@ -317,6 +314,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 <!-- Toast Container -->
 <div id="global-toast" class="toast-notif" style="display:none;"></div>
 
-<script src="assets/js/app.js"></script>
+<script src="../assets/js/app.js"></script>
 </body>
 </html>

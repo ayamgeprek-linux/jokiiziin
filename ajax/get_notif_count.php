@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/notifikasi.php';
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/notifikasi.php';
 
 if (!$auth->isLoggedIn()) {
     echo json_encode(['count' => 0]);

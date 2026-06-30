@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: includes/header.php
  * FUNGSI: Header/Topbar untuk semua halaman
- * VERSION: FINAL - Mobile Fix
+ * VERSION: FINAL - Mobile Nav Fixed
  * =====================================================
  */
 
@@ -39,12 +39,12 @@ if (isset($database) && isset($uid)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Magang.usg — Manajemen Cuti Karyawan</title>
     
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
     
     <style>
         /* ============================================
-           TOPBAR - DESKTOP & MOBILE
+           TOPBAR
            ============================================ */
         .topbar {
             display: flex;
@@ -59,7 +59,7 @@ if (isset($database) && isset($uid)) {
             z-index: 100;
         }
         .topbar-logo {
-            font-family: var(--font-display);
+            font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
             font-size: 16px;
             color: #1a1a1a;
@@ -267,7 +267,7 @@ if (isset($database) && isset($uid)) {
         .notif-empty i { font-size: 32px; display: block; margin-bottom: 8px; color: #ddd; }
         
         /* ============================================
-           MOBILE NAVBAR
+           MOBILE NAVBAR - FIX
            ============================================ */
         .mobile-nav-bar {
             display: none;
@@ -374,15 +374,15 @@ if (isset($database) && isset($uid)) {
     
     <?php if ($isAdmin): ?>
     <nav class="topbar-nav">
-        <a href="admin.php" class="<?= $currentPage === 'admin' ? 'active' : '' ?>">Review</a>
-        <a href="admin_riwayat.php" class="<?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>">Riwayat</a>
-        <a href="admin_laporan.php" class="<?= $currentPage === 'admin-laporan' ? 'active' : '' ?>">Laporan</a>
+        <a href="../admin/index.php" class="<?= $currentPage === 'admin' ? 'active' : '' ?>">Review</a>
+        <a href="../admin/riwayat.php" class="<?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>">Riwayat</a>
+        <a href="../admin/laporan.php" class="<?= $currentPage === 'admin-laporan' ? 'active' : '' ?>">Laporan</a>
     </nav>
     <?php else: ?>
     <nav class="topbar-nav">
-        <a href="home.php" class="<?= $currentPage === 'home' ? 'active' : '' ?>">Dashboard</a>
-        <a href="home.php#ajukan-cuti" class="<?= $currentPage === 'ajukan' ? 'active' : '' ?>">Ajukan</a>
-        <a href="riwayat.php" class="<?= $currentPage === 'riwayat' ? 'active' : '' ?>">Riwayat</a>
+        <a href="../user/index.php" class="<?= $currentPage === 'home' ? 'active' : '' ?>">Dashboard</a>
+        <a href="../user/index.php#ajukan-cuti" class="<?= $currentPage === 'ajukan' ? 'active' : '' ?>">Ajukan</a>
+        <a href="../user/riwayat.php" class="<?= $currentPage === 'riwayat' ? 'active' : '' ?>">Riwayat</a>
     </nav>
     <?php endif; ?>
     
@@ -443,58 +443,60 @@ if (isset($database) && isset($uid)) {
             <small><?= escape($user['jabatan'] ?? 'Karyawan') ?></small>
         </div>
         
-        <div class="topbar-avatar" onclick="window.location.href='profile.php'">
+        <div class="topbar-avatar" onclick="window.location.href='../user/profile.php'">
             <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
         </div>
     </div>
 </header>
 
 <!-- =====================================================
-     MOBILE NAVBAR
+     MOBILE NAVBAR - FIXED PATH
      ===================================================== -->
 <nav class="mobile-nav-bar">
     <?php if ($isAdmin): ?>
-        <button class="mobile-nav-item <?= $currentPage === 'admin' ? 'active' : '' ?>" onclick="window.location.href='admin.php'">
+        <!-- 🔥 ADMIN MOBILE NAV -->
+        <button class="mobile-nav-item <?= $currentPage === 'admin' ? 'active' : '' ?>" onclick="window.location.href='../admin/index.php'">
             <i class="ri-file-search-line"></i>
             <span>Review</span>
         </button>
-        <button class="mobile-nav-item <?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>" onclick="window.location.href='admin_riwayat.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>" onclick="window.location.href='../admin/riwayat.php'">
             <i class="ri-history-line"></i>
             <span>Riwayat</span>
         </button>
-        <button class="mobile-nav-item <?= $currentPage === 'admin-laporan' ? 'active' : '' ?>" onclick="window.location.href='admin_laporan.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'admin-laporan' ? 'active' : '' ?>" onclick="window.location.href='../admin/laporan.php'">
             <i class="ri-file-chart-line"></i>
             <span>Laporan</span>
         </button>
-        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='profile.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='../user/profile.php'">
             <i class="ri-user-line"></i>
             <span>Profil</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.location.href='logout.php'">
+        <button class="mobile-nav-item" onclick="window.location.href='../auth/logout.php'">
             <i class="ri-logout-box-line"></i>
             <span>Keluar</span>
         </button>
     <?php else: ?>
-        <button class="mobile-nav-item <?= $currentPage === 'home' ? 'active' : '' ?>" onclick="window.location.href='home.php'">
+        <!-- 🔥 USER MOBILE NAV -->
+        <button class="mobile-nav-item <?= $currentPage === 'home' ? 'active' : '' ?>" onclick="window.location.href='../user/index.php'">
             <i class="ri-dashboard-line"></i>
             <span>Dashboard</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.location.href='home.php#ajukan-cuti'">
+        <button class="mobile-nav-item" onclick="window.location.href='../user/index.php#ajukan-cuti'">
             <i class="ri-add-circle-line"></i>
             <span>Ajukan</span>
         </button>
-        <button class="mobile-nav-item <?= $currentPage === 'riwayat' ? 'active' : '' ?>" onclick="window.location.href='riwayat.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'riwayat' ? 'active' : '' ?>" onclick="window.location.href='../user/riwayat.php'">
             <i class="ri-history-line"></i>
             <span>Riwayat</span>
             <?php if (isset($stats['menunggu']) && $stats['menunggu'] > 0): ?>
                 <span class="nav-badge"><?= $stats['menunggu'] ?></span>
             <?php endif; ?>
         </button>
-        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='profile.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='../user/profile.php'">
             <i class="ri-user-line"></i>
             <span>Profil</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.location.href='logout.php'">
+        <button class="mobile-nav-item" onclick="window.location.href='../auth/logout.php'">
             <i class="ri-logout-box-line"></i>
             <span>Keluar</span>
         </button>
@@ -519,7 +521,7 @@ document.addEventListener('click', function(e) {
 });
 
 function clickNotif(id, link) {
-    fetch('ajax_mark_read.php', {
+    fetch('../ajax/mark_read.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'id=' + id
@@ -529,13 +531,13 @@ function clickNotif(id, link) {
 }
 
 function markAllNotif() {
-    fetch('ajax_mark_all_read.php', { method: 'POST' })
+    fetch('../ajax/mark_all_read.php', { method: 'POST' })
     .then(() => location.reload())
     .catch(() => location.reload());
 }
 
 setInterval(function() {
-    fetch('ajax_get_notif_count.php')
+    fetch('../ajax/get_notif_count.php')
     .then(response => response.json())
     .then(data => {
         const badge = document.querySelector('.notif-badge');

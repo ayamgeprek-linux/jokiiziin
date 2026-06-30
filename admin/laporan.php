@@ -7,10 +7,18 @@
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
 
+if (!$auth->isLoggedIn()) {
+    header('Location: ../auth/login.php');
+    exit;
+}
+if (!$auth->isAdmin()) {
+    header('Location: ../user/index.php');
+    exit;
+}
 requireAdmin($auth);
 
 $database = FirebaseConfig::getDatabase();
@@ -77,7 +85,7 @@ uasort($userCutiCount, function($a, $b) {
 });
 
 $currentPage = 'admin-laporan';
-include 'includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <style>
@@ -92,14 +100,14 @@ include 'includes/header.php';
 <div class="layout-with-sidebar page-with-mobile-nav">
     <aside class="sidebar">
         <div class="sidebar-logo">Magang<span>.usg</span><br><small style="font-size:11px;font-weight:400;color:rgba(255,255,255,.4);">Admin Panel</small></div>
-        <div class="sidebar-item" onclick="window.location.href='admin.php'"><i class="ri-file-search-line"></i> Review</div>
-        <div class="sidebar-item" onclick="window.location.href='admin_riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
+        <div class="sidebar-item" onclick="window.location.href='index.php'"><i class="ri-file-search-line"></i> Review</div>
+        <div class="sidebar-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
         <div class="sidebar-item active"><i class="ri-file-chart-line"></i> Laporan</div>
-        <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
+        <div class="sidebar-item" onclick="window.location.href='../user/profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
-            <div class="sidebar-pdf-btn" onclick="window.location.href='admin_cetak_pdf.php'"><i class="ri-printer-line"></i> Cetak PDF</div>
-            <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
-            <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
+            <div class="sidebar-pdf-btn" onclick="window.location.href='cetak_pdf.php'"><i class="ri-printer-line"></i> Cetak PDF</div>
+           
+            <div class="sidebar-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
         </div>
     </aside>
 
@@ -113,7 +121,7 @@ include 'includes/header.php';
                 <a href="?tanggal=<?= date('Y-m-d') ?>" class="btn btn-outline btn-sm">Hari Ini</a>
                 <a href="?bulan=<?= date('Y-m') ?>" class="btn btn-outline btn-sm">Bulan Ini</a>
                 <a href="?" class="btn btn-primary btn-sm">Semua</a>
-                <button class="btn btn-gold btn-sm" onclick="window.location.href='admin_cetak_pdf.php'"><i class="ri-printer-line"></i> PDF</button>
+                <button class="btn btn-gold btn-sm" onclick="window.location.href='cetak_pdf.php'"><i class="ri-printer-line"></i> PDF</button>
             </div>
         </div>
 
@@ -225,4 +233,5 @@ include 'includes/header.php';
     </main>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
+

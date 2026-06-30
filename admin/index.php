@@ -1,18 +1,29 @@
 <?php
 /**
  * =====================================================
- * FILE: admin.php
+ * FILE: admin/index.php
  * FUNGSI: Admin Panel - Review Cuti + Kelola User
  * VERSION: FINAL
  * =====================================================
  */
 
-require_once 'config/firebase.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
-require_once 'includes/notifikasi.php';
+// 🔥 FIX PATH
+require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/notifikasi.php';
 
-requireAdmin($auth);
+// Cek login
+if (!$auth->isLoggedIn()) {
+    header('Location: ../auth/login.php');
+    exit;
+}
+
+// Cek role admin
+if (!$auth->isAdmin()) {
+    header('Location: ../user/index.php');
+    exit;
+}
 
 $user = $auth->getCurrentUser();
 $uid = $auth->getCurrentUid();
@@ -50,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_cuti'])) {
             
             NotifikasiManager::notifikasiStatusBerubah($database, $cutiData['user_id'] ?? '', $cutiData, $status, $catatan);
             $_SESSION['flash_message'] = 'Pengajuan cuti berhasil di-' . strtolower($status) . '!';
-            redirect('admin.php');
+            header('Location: ' . $_SERVER['PHP_SELF']);
+            exit;
         } catch (Exception $e) {
             $error = 'Gagal update data: ' . $e->getMessage();
         }
@@ -69,7 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_cuti'])) {
         if ($sisaBaru !== false) {
             $_SESSION['flash_message'] = "✅ Sisa cuti berhasil ditambah $tambah hari!";
         }
-        redirect('admin.php');
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
     } else {
         $error = 'Pilih karyawan dan masukkan jumlah hari';
     }
@@ -106,12 +119,13 @@ if (is_array($allRequests) && !empty($allRequests)) {
     }
 }
 
-// 🔥 AMBIL SEMUA USER UNTUK KELOLA USER
 $allUsers = $database->getReference('users')->getValue();
 if (!is_array($allUsers)) $allUsers = [];
 
 $currentPage = 'admin';
-include 'includes/header.php';
+
+// 🔥 FIX: Path ke header
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <style>
@@ -139,19 +153,19 @@ include 'includes/header.php';
         
         <!-- 🔥 MENU ADMIN -->
         <div class="sidebar-item active"><i class="ri-file-search-line"></i> Review Cuti</div>
-        <div class="sidebar-item" onclick="window.location.href='admin_riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
-        <div class="sidebar-item" onclick="window.location.href='admin_laporan.php'"><i class="ri-file-chart-line"></i> Laporan</div>
+        <div class="sidebar-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i> Riwayat</div>
+        <div class="sidebar-item" onclick="window.location.href='laporan.php'"><i class="ri-file-chart-line"></i> Laporan</div>
         
         <!-- 🔥 KELOLA USER - Menu terpisah -->
         <div class="sidebar-item" onclick="document.getElementById('kelola-user').scrollIntoView()">
             <i class="ri-user-settings-line"></i> Kelola User
         </div>
         
-        <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
+        <div class="sidebar-item" onclick="window.location.href='../user/profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
-            <div class="sidebar-pdf-btn" onclick="window.location.href='admin_cetak_pdf.php'"><i class="ri-printer-line"></i> Cetak Laporan PDF</div>
+            <div class="sidebar-pdf-btn" onclick="window.location.href='cetak_pdf.php'"><i class="ri-printer-line"></i> Cetak Laporan PDF</div>
             <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
-            <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
+            <div class="sidebar-item" onclick="window.location.href='../auth/logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
         </div>
     </aside>
 
@@ -337,7 +351,7 @@ function openReviewModal(id) {
         html += `<div ${f[0] === 'Alasan' ? 'style="grid-column:span 2;"' : ''}><div style="font-size:10px;color:#999;text-transform:uppercase;">${f[0]}</div><div style="font-weight:600;">${f[1]}</div></div>`;
     });
     if (data.dokumen) {
-        html += `<div style="grid-column:span 2;margin-top:4px;"><a href="${data.dokumen}" target="_blank" style="color:#B8860B;text-decoration:underline;">📎 Lihat Dokumen</a></div>`;
+        html += `<div style="grid-column:span 2;margin-top:4px;"><a href="${data.dokumen}" target="_blank" style="color:#B8860B;text-decoration:underline;"> Lihat Dokumen</a></div>`;
     }
     html += `<div style="grid-column:span 2;margin-top:8px;"><div style="font-size:10px;color:#999;text-transform:uppercase;">Catatan Review <span style="color:red;">*</span></div><textarea name="catatan" id="review-catatan" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;resize:vertical;margin-top:4px;" placeholder="Masukkan catatan..." required></textarea></div>`;
     html += '</div>';
@@ -354,4 +368,5 @@ document.getElementById('review-form').addEventListener('submit', function(e) {
 });
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<!-- 🔥 FIX: Path ke footer -->
+<?php include __DIR__ . '/../includes/footer.php'; ?>

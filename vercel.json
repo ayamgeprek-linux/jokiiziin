@@ -6,12 +6,24 @@
   },
   "routes": [
     {
-      "src": "/assets/css/(.*)",
-      "dest": "/assets/css/$1"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "src": "/assets/js/(.*)",
-      "dest": "/assets/js/$1"
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1"
+    },
+    {
+      "src": "/user/(.*)",
+      "dest": "/user/$1"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "/auth/$1"
+    },
+    {
+      "src": "/ajax/(.*)",
+      "dest": "/ajax/$1"
     },
     {
       "src": "/(.*)",
