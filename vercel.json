@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.9.0"
     }
   },
@@ -8,6 +8,22 @@
     {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "/auth/$1"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1"
+    },
+    {
+      "src": "/user/(.*)",
+      "dest": "/user/$1"
+    },
+    {
+      "src": "/ajax/(.*)",
+      "dest": "/ajax/$1"
     },
     {
       "src": "/(.*)",
