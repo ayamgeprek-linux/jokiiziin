@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: includes/header.php
  * FUNGSI: Header/Topbar untuk semua halaman
- * VERSION: 2.0 - With Mobile Nav Fix
+ * VERSION: FINAL - Fixed $uid
  * =====================================================
  */
 
@@ -16,13 +16,23 @@ if (!isset($currentPage)) {
     $currentPage = 'home';
 }
 
+// 🔥 FIX: Pastikan $uid ada (untuk notifikasi)
+if (!isset($uid)) {
+    $uid = $_SESSION['uid'] ?? null;
+}
+
 $isAdmin = isset($user['role']) && $user['role'] === 'admin';
 
 // Load notifikasi
-require_once __DIR__ . '/notifikasi.php';
-$notifManager = new NotifikasiManager($database, $uid, $isAdmin);
-$unreadCount = $notifManager->getUnreadCount();
-$recentNotif = $notifManager->getRecentNotifikasi(5);
+if (isset($database) && isset($uid)) {
+    require_once __DIR__ . '/notifikasi.php';
+    $notifManager = new NotifikasiManager($database, $uid, $isAdmin);
+    $unreadCount = $notifManager->getUnreadCount();
+    $recentNotif = $notifManager->getRecentNotifikasi(5);
+} else {
+    $unreadCount = 0;
+    $recentNotif = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -31,15 +41,53 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Magang.usg — Manajemen Cuti Karyawan</title>
     
+    <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
     
     <style>
-        /* 🔥 NOTIFIKASI DROPDOWN STYLE */
+        /* ============================================
+           NOTIFIKASI DROPDOWN
+           ============================================ */
+        .notif-btn-wrapper {
+            position: relative;
+            display: inline-block;
+            z-index: 1001;
+        }
+        .notif-btn {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--clr-bg);
+            border: 1px solid var(--clr-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #C0392B;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid #fff;
+        }
         .notif-dropdown {
             display: none;
             position: absolute;
-            top: 50px;
+            top: 45px;
             right: 0;
             width: 360px;
             max-height: 400px;
@@ -51,7 +99,7 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             z-index: 1000;
         }
         .notif-dropdown.active {
-            display: block;
+            display: block !important;
         }
         .notif-dropdown-header {
             padding: 12px 16px;
@@ -61,6 +109,11 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             align-items: center;
             font-weight: 600;
             font-size: 14px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-radius: var(--r-lg) var(--r-lg) 0 0;
+            z-index: 5;
         }
         .notif-dropdown-header .mark-all {
             font-size: 12px;
@@ -101,10 +154,7 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
         .notif-item .notif-icon.warning { background: var(--clr-warning-bg); color: var(--clr-primary); }
         .notif-item .notif-icon.danger { background: var(--clr-danger-bg); color: var(--clr-danger); }
         .notif-item .notif-icon.info { background: var(--clr-bg); color: var(--clr-muted); }
-        
-        .notif-item .notif-body {
-            flex: 1;
-        }
+        .notif-item .notif-body { flex: 1; }
         .notif-item .notif-body .notif-judul {
             font-size: 13px;
             font-weight: 600;
@@ -131,28 +181,10 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             margin-bottom: 8px;
             color: var(--clr-border);
         }
-        .notif-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #C0392B;
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-            border: 2px solid #fff;
-        }
-        .notif-btn-wrapper {
-            position: relative;
-        }
-
-        /* 🔥 MOBILE NAVBAR FIX */
+        
+        /* ============================================
+           MOBILE NAVBAR
+           ============================================ */
         .mobile-nav-bar {
             display: none;
             position: fixed;
@@ -219,6 +251,10 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             .page-with-mobile-nav .main-content {
                 padding-bottom: 80px !important;
             }
+            .notif-dropdown {
+                width: 300px;
+                right: -60px;
+            }
         }
     </style>
 </head>
@@ -231,13 +267,14 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
     <div class="topbar-logo">Magang<span>.usg</span></div>
     
     <?php if ($isAdmin): ?>
+    <!-- Navbar Admin -->
     <nav class="topbar-nav">
         <a href="admin.php" class="<?= $currentPage === 'admin' ? 'active' : '' ?>">Dashboard</a>
-        <a href="admin.php" class="<?= $currentPage === 'review' ? 'active' : '' ?>">Review Cuti</a>
         <a href="admin_riwayat.php" class="<?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>">Riwayat</a>
         <a href="admin_laporan.php" class="<?= $currentPage === 'admin-laporan' ? 'active' : '' ?>">Laporan</a>
     </nav>
     <?php else: ?>
+    <!-- Navbar User -->
     <nav class="topbar-nav">
         <a href="home.php" class="<?= $currentPage === 'home' ? 'active' : '' ?>">Dashboard</a>
         <a href="home.php#ajukan-cuti" class="<?= $currentPage === 'ajukan' ? 'active' : '' ?>">Ajukan Cuti</a>
@@ -246,18 +283,20 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
     <?php endif; ?>
     
     <div class="topbar-right">
+        <!-- Search -->
         <div class="topbar-search">
             <i class="ri-search-line" style="color:var(--clr-muted);"></i>
             <input type="text" placeholder="Cari...">
         </div>
         
+        <!-- Admin Badge -->
         <?php if ($isAdmin): ?>
         <div class="admin-mode-badge">
-            <i class="ri-settings-3-line"></i> Admin Mode
+            <i class="ri-settings-3-line"></i> Admin
         </div>
         <?php endif; ?>
         
-        <!-- Notifikasi -->
+        <!-- 🔥 NOTIFIKASI -->
         <div class="notif-btn-wrapper">
             <button class="notif-btn" id="notifToggle" onclick="toggleNotif()">
                 <i class="ri-notification-3-line"></i>
@@ -298,12 +337,14 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             </div>
         </div>
         
+        <!-- User Info -->
         <div class="user-info">
             <strong><?= escape($user['name'] ?? 'User') ?></strong>
             <small><?= escape($user['jabatan'] ?? 'Karyawan') ?></small>
         </div>
         
-        <div class="topbar-avatar">
+        <!-- Avatar → Profil -->
+        <div class="topbar-avatar" onclick="window.location.href='profile.php'">
             <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
         </div>
     </div>
@@ -327,6 +368,10 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
             <i class="ri-file-chart-line"></i>
             <span>Laporan</span>
         </button>
+        <button class="mobile-nav-item" onclick="window.location.href='profile.php'">
+            <i class="ri-user-line"></i>
+            <span>Profil</span>
+        </button>
         <button class="mobile-nav-item" onclick="window.location.href='logout.php'">
             <i class="ri-logout-box-line"></i>
             <span>Keluar</span>
@@ -344,9 +389,13 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
         <button class="mobile-nav-item <?= $currentPage === 'riwayat' ? 'active' : '' ?>" onclick="window.location.href='riwayat.php'">
             <i class="ri-history-line"></i>
             <span>Riwayat</span>
-            <?php if ($stats['menunggu'] ?? 0 > 0): ?>
+            <?php if (isset($stats['menunggu']) && $stats['menunggu'] > 0): ?>
                 <span class="nav-badge"><?= $stats['menunggu'] ?></span>
             <?php endif; ?>
+        </button>
+        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='profile.php'">
+            <i class="ri-user-line"></i>
+            <span>Profil</span>
         </button>
         <button class="mobile-nav-item" onclick="window.location.href='logout.php'">
             <i class="ri-logout-box-line"></i>
@@ -356,7 +405,7 @@ $recentNotif = $notifManager->getRecentNotifikasi(5);
 </nav>
 
 <!-- =====================================================
-     SCRIPT NOTIFIKASI
+     🔥 NOTIFIKASI SCRIPT
      ===================================================== -->
 <script>
 // Toggle dropdown notifikasi

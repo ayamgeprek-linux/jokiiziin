@@ -411,7 +411,7 @@ $html .= '
 
 <div class="report-header">
     <div class="left">
-        <div class="title">📊 <span>Executive</span> Summary</div>
+        <div class="title"> <span>Executive</span> Summary</div>
         <div class="sub">Ringkasan eksekutif pengajuan cuti karyawan</div>
     </div>
     <div class="right">
@@ -466,7 +466,7 @@ $html .= '
 <!-- Chart Row -->
 <div class="chart-row">
     <div class="chart-container">
-        <div class="chart-title">📋 Jenis Cuti Terbanyak</div>';
+        <div class="chart-title"> Jenis Cuti Terbanyak</div>';
 
 $maxJenis = max($jenisCutiCount) ?: 1;
 $colors = ['#B8860B', '#2D7A4F', '#3498DB', '#8E44AD', '#E67E22', '#1ABC9C'];
@@ -488,7 +488,7 @@ endforeach;
 $html .= '
     </div>
     <div class="chart-container">
-        <div class="chart-title">🏢 Departemen Teraktif</div>';
+        <div class="chart-title"> Departemen Teraktif</div>';
 
 $maxDep = max($departemenCount) ?: 1;
 $depColors = ['#B8860B', '#2D7A4F', '#3498DB', '#8E44AD', '#E67E22', '#1ABC9C'];
@@ -520,7 +520,7 @@ $html .= '
 
 <div class="report-header">
     <div class="left">
-        <div class="title">📋 <span>Detail</span> Pengajuan</div>
+        <div class="title"> <span>Detail</span> Pengajuan</div>
         <div class="sub">Daftar lengkap semua pengajuan cuti</div>
     </div>
     <div class="right">
@@ -594,7 +594,7 @@ $html .= '
 
 <div class="report-header">
     <div class="left">
-        <div class="title">📈 <span>Distribusi</span> Status</div>
+        <div class="title"> <span>Distribusi</span> Status</div>
         <div class="sub">Analisis persebaran status pengajuan</div>
     </div>
     <div class="right">

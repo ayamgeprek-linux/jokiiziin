@@ -99,11 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             <span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff">
                 Magang<span style="color:var(--clr-primary)">.usg</span>
             </span>
-            <a href="#">Beranda</a>
-            <a href="#">Informasi</a>
-            <a href="#">Tata Cara</a>
-            <a href="#">Kontak Kami</a>
-            <a href="#">···</a>
+           
         </nav>
         <div class="login-hero-content">
             <span class="login-eyebrow">Edisi 2025</span>
@@ -126,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 </div>
             </div>
         </div>
-        <div class="login-hero-footer">COORD: -6.2088° S, 106.8456° E | HR CORE V4.2</div>
+       
     </div>
 
     <!-- RIGHT PANEL (desktop login card) -->

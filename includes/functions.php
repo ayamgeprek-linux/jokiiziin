@@ -2,13 +2,10 @@
 /**
  * =====================================================
  * FILE: includes/functions.php
- * VERSION: 4.0 - All functions
+ * FUNGSI: Helper functions
+ * VERSION: FINAL
  * =====================================================
  */
-
-// ============================================
-// FUNGSI DASAR
-// ============================================
 
 function showToast($message, $type = 'info') {
     $icon = 'ri-information-line';
@@ -58,10 +55,6 @@ function getJenisCuti() {
     ];
 }
 
-// ============================================
-// FUNGSI CUTI
-// ============================================
-
 function getSisaCuti($uid, $database) {
     $userData = $database->getReference('users/' . $uid)->getValue();
     $totalCuti = (is_array($userData) && isset($userData['sisa_cuti'])) ? (int)$userData['sisa_cuti'] : 12;
@@ -92,119 +85,62 @@ function getSisaCuti($uid, $database) {
     return max(0, $totalCuti - $used);
 }
 
-function generateCutiId() {
-    return 'CUT-' . date('Y') . '-' . strtoupper(substr(uniqid(), -4));
-}
-
-// ============================================
-// FUNGSI SISA CUTI (BARU)
-// ============================================
-
-/**
- * 🔥 UPDATE SISA CUTI - Saat cuti disetujui
- */
 function updateSisaCuti($uid, $durasi, $database) {
     $userData = $database->getReference('users/' . $uid)->getValue();
-    
-    if (!is_array($userData)) {
-        return false;
-    }
+    if (!is_array($userData)) return false;
     
     $sisaCuti = (int)($userData['sisa_cuti'] ?? 12);
     $sisaCutiBaru = max(0, $sisaCuti - $durasi);
     
     $database->getReference('users/' . $uid . '/sisa_cuti')->set($sisaCutiBaru);
-    
     return $sisaCutiBaru;
 }
 
-/**
- * 🔥 TAMBAH SISA CUTI - Untuk admin
- */
 function tambahSisaCuti($uid, $tambah, $database) {
     $userData = $database->getReference('users/' . $uid)->getValue();
-    
-    if (!is_array($userData)) {
-        return false;
-    }
+    if (!is_array($userData)) return false;
     
     $sisaCuti = (int)($userData['sisa_cuti'] ?? 12);
     $sisaCutiBaru = $sisaCuti + $tambah;
     
     $database->getReference('users/' . $uid . '/sisa_cuti')->set($sisaCutiBaru);
-    
     return $sisaCutiBaru;
 }
 
-/**
- * 🔥 GET ALL USERS - Untuk admin
- */
 function getAllUsers($database) {
     $users = $database->getReference('users')->getValue();
     return is_array($users) ? $users : [];
 }
 
-function getUserData($uid, $database) {
-    $data = $database->getReference('users/' . $uid)->getValue();
-    return is_array($data) ? $data : null;
+function generateCutiId() {
+    return 'CUT-' . date('Y') . '-' . strtoupper(substr(uniqid(), -4));
 }
-
-// ============================================
-// FUNGSI REDIRECT & AUTH (🔥 PASTIKAN ADA!)
-// ============================================
 
 function redirect($url) {
     header('Location: ' . $url);
     exit;
 }
 
-/**
- * 🔥 Cek apakah user sudah login, jika tidak redirect ke login
- */
 function requireLogin($auth) {
-    if (!$auth->isLoggedIn()) {
-        redirect('login.php');
-    }
+    if (!$auth->isLoggedIn()) redirect('login.php');
 }
 
-/**
- * 🔥 Cek apakah user adalah admin, jika tidak redirect ke home
- */
 function requireAdmin($auth) {
     requireLogin($auth);
-    if (!$auth->isAdmin()) {
-        redirect('home.php');
-    }
+    if (!$auth->isAdmin()) redirect('home.php');
 }
-
-// ============================================
-// FUNGSI KEAMANAN
-// ============================================
 
 function escape($string) {
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
 }
 
-// ============================================
-// FUNGSI BASE_URL
-// ============================================
-
 function base_url($path = '') {
     $host = $_SERVER['HTTP_HOST'] ?? '';
     $isLocal = strpos($host, 'localhost') !== false || 
-               strpos($host, '127.0.0.1') !== false ||
-               strpos($host, '192.168.') !== false;
+               strpos($host, '127.0.0.1') !== false;
     
-    if ($isLocal) {
-        $base = '/izin'; // Ganti dengan folder project Anda
-    } else {
-        $base = '';
-    }
-    
+    $base = $isLocal ? '/izin' : '';
     $path = ltrim($path, '/');
-    if (empty($path)) {
-        return $base . '/';
-    }
     return $base . '/' . $path;
 }
 ?>

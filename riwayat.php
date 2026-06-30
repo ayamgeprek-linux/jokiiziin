@@ -3,7 +3,7 @@
  * =====================================================
  * FILE: riwayat.php
  * FUNGSI: Riwayat Pengajuan Cuti
- * VERSION: 8.0 - Fixed Popup Modern
+ * VERSION: 8.1 - With Date Filter
  * =====================================================
  */
 
@@ -33,6 +33,38 @@ if (is_array($allPermohonan) && !empty($allPermohonan)) {
     }
 }
 
+// =====================================================
+// 🔥 FILTER TANGGAL (TAMBAHAN)
+// =====================================================
+$filterTanggal = $_GET['tanggal'] ?? '';
+$filterBulan = $_GET['bulan'] ?? '';
+
+// Data untuk ditampilkan (dengan filter)
+$displayData = [];
+foreach ($permohonan as $key => $izin) {
+    if (!is_array($izin)) continue;
+    
+    $created = substr($izin['created_at'] ?? '', 0, 10);
+    $bulan = substr($izin['created_at'] ?? '', 0, 7);
+    
+    $match = true;
+    if (!empty($filterTanggal) && $created !== $filterTanggal) {
+        $match = false;
+    }
+    if (!empty($filterBulan) && $bulan !== $filterBulan) {
+        $match = false;
+    }
+    
+    if ($match) {
+        $displayData[$key] = $izin;
+    }
+}
+
+// Jika tidak ada filter, tampilkan semua
+if (empty($filterTanggal) && empty($filterBulan)) {
+    $displayData = $permohonan;
+}
+
 $stats = [
     'total'    => 0,
     'menunggu' => 0,
@@ -41,8 +73,8 @@ $stats = [
     'selesai'  => 0
 ];
 
-if (is_array($permohonan) && !empty($permohonan)) {
-    foreach ($permohonan as $izin) {
+if (is_array($displayData) && !empty($displayData)) {
+    foreach ($displayData as $izin) {
         if (!is_array($izin)) continue;
         $stats['total']++;
         $status = $izin['status'] ?? '';
@@ -68,6 +100,84 @@ include 'includes/header.php';
 }
 @media (max-width: 768px) {
     #desktop-history-view { display: none !important; }
+}
+
+/* ===== FILTER TANGGAL ===== */
+.filter-date-container {
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--r-md);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.filter-date-container label {
+    font-size: 12px;
+    color: var(--clr-muted);
+    font-weight: 600;
+}
+.filter-date-container input[type="date"],
+.filter-date-container input[type="month"] {
+    padding: 6px 10px;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    background: #fff;
+    color: var(--clr-dark);
+}
+.filter-date-container .btn-filter {
+    padding: 6px 16px;
+    background: var(--clr-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.filter-date-container .btn-filter:hover {
+    background: var(--clr-primary-dark);
+}
+.filter-date-container .btn-reset {
+    padding: 6px 16px;
+    background: var(--clr-bg);
+    color: var(--clr-dark);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.filter-date-container .btn-reset:hover {
+    background: #e0e0e0;
+}
+.filter-date-container .filter-badge {
+    font-size: 12px;
+    color: var(--clr-muted);
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--clr-border);
+}
+@media (max-width: 768px) {
+    .filter-date-container {
+        margin: 0 12px 14px;
+        padding: 10px 12px;
+    }
+    .filter-date-container input[type="date"],
+    .filter-date-container input[type="month"] {
+        font-size: 12px;
+        padding: 5px 8px;
+        width: 100%;
+    }
+    .filter-date-container .btn-filter,
+    .filter-date-container .btn-reset {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
 }
 
 /* ===== MOBILE RIWAYAT ===== */
@@ -439,7 +549,6 @@ include 'includes/header.php';
         <div class="sidebar-item active"><i class="ri-history-line"></i> Riwayat</div>
         <div class="sidebar-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i> Profil</div>
         <div class="sidebar-bottom">
-            <div class="sidebar-item"><i class="ri-settings-3-line"></i> Pengaturan</div>
             <div class="sidebar-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i> Keluar</div>
         </div>
     </aside>
@@ -455,7 +564,40 @@ include 'includes/header.php';
                 <span style="background:var(--clr-bg);padding:4px 12px;border-radius:var(--r-sm);font-size:13px;">
                     Total Pengajuan: <strong><?= $stats['total'] ?></strong>
                 </span>
+                <?php if (!empty($filterTanggal)): ?>
+                    <span style="background:rgba(184,134,11,.15);padding:4px 12px;border-radius:var(--r-sm);font-size:13px;color:var(--clr-primary);">
+                        📅 <?= formatTanggal($filterTanggal) ?>
+                    </span>
+                <?php endif; ?>
+                <?php if (!empty($filterBulan)): ?>
+                    <span style="background:rgba(184,134,11,.15);padding:4px 12px;border-radius:var(--r-sm);font-size:13px;color:var(--clr-primary);">
+                        📆 <?= date('F Y', strtotime($filterBulan . '-01')) ?>
+                    </span>
+                <?php endif; ?>
             </div>
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- 🔥 FILTER TANGGAL (TAMBAHAN) -->
+        <!-- ===================================================== -->
+        <div class="filter-date-container">
+            <label>Filter:</label>
+            <form method="GET" action="" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <input type="date" name="tanggal" value="<?= $filterTanggal ?>" placeholder="Tanggal">
+                <span style="color:var(--clr-muted);font-size:13px;">atau</span>
+                <input type="month" name="bulan" value="<?= $filterBulan ?>" placeholder="Bulan">
+                <button type="submit" class="btn-filter">Terapkan</button>
+                <a href="?" class="btn-reset">Reset</a>
+            </form>
+            <?php if (!empty($filterTanggal) || !empty($filterBulan)): ?>
+                <span class="filter-badge">
+                    <?php if (!empty($filterTanggal)): ?>
+                        <?= $stats['total'] ?> data
+                    <?php else: ?>
+                        <?= $stats['total'] ?> data
+                    <?php endif; ?>
+                </span>
+            <?php endif; ?>
         </div>
 
         <div class="history-layout">
@@ -495,13 +637,13 @@ include 'includes/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($permohonan)): ?>
-                                <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--clr-muted);">Belum ada pengajuan cuti</td></tr>
+                            <?php if (empty($displayData)): ?>
+                                <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--clr-muted);">Tidak ada data</td></tr>
                             <?php else: ?>
-                                <?php foreach (array_reverse($permohonan) as $key => $izin): ?>
+                                <?php $no = 1; foreach (array_reverse($displayData) as $key => $izin): ?>
                                     <?php if (!is_array($izin)) continue; ?>
                                     <tr class="history-row" data-status="<?= $izin['status'] ?? 'Menunggu' ?>">
-                                        <td style="font-weight:600;">#<?= escape($izin['id'] ?? 'CUT-' . substr($key, -4)) ?></td>
+                                        <td style="font-weight:600;"><?= $no++ ?></td>
                                         <td><?= escape($izin['jenis_cuti'] ?? '-') ?></td>
                                         <td><?= formatTanggal($izin['created_at'] ?? '') ?></td>
                                         <td><?= $izin['durasi'] ?? 0 ?> hari</td>
@@ -522,7 +664,7 @@ include 'includes/header.php';
                         </tbody>
                     </table>
                     <div class="table-pagination">
-                        <span>Menampilkan <?= count($permohonan ?? []) ?> dari <?= $stats['total'] ?> riwayat</span>
+                        <span>Menampilkan <?= count($displayData ?? []) ?> dari <?= $stats['total'] ?> riwayat</span>
                         <div class="pagination-btns">
                             <button class="page-btn"><i class="ri-arrow-left-s-line"></i></button>
                             <button class="page-btn active">1</button>
@@ -544,7 +686,7 @@ include 'includes/header.php';
 
     <div class="mobile-riwayat-header">
         <div>
-            <h2>📋 Riwayat Cuti</h2>
+            <h2> Riwayat Cuti</h2>
             <div class="sub-info">Sisa cuti: <strong><?= $sisaCuti ?></strong> hari</div>
         </div>
         <div class="avatar-wrapper">
@@ -555,6 +697,20 @@ include 'includes/header.php';
                 <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
             </div>
         </div>
+    </div>
+
+    <!-- 🔥 FILTER TANGGAL MOBILE -->
+    <div class="filter-date-container" style="margin:0 12px 14px;">
+        <form method="GET" action="" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="date" name="tanggal" value="<?= $filterTanggal ?>" style="flex:1;min-width:120px;">
+                <input type="month" name="bulan" value="<?= $filterBulan ?>" style="flex:1;min-width:120px;">
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button type="submit" class="btn-filter" style="flex:1;">Terapkan</button>
+                <a href="?" class="btn-reset" style="flex:1;text-align:center;text-decoration:none;">Reset</a>
+            </div>
+        </form>
     </div>
 
     <div class="mobile-stats-grid">
@@ -587,7 +743,7 @@ include 'includes/header.php';
 
     <div class="mobile-section-title">Daftar Pengajuan</div>
     <div class="mobile-riwayat-container">
-        <?php if (empty($permohonan)): ?>
+        <?php if (empty($displayData)): ?>
             <div class="empty-state-mobile">
                 <i class="ri-inbox-line"></i>
                 <h4>Belum Ada Pengajuan</h4>
@@ -597,7 +753,7 @@ include 'includes/header.php';
                 </button>
             </div>
         <?php else: ?>
-            <?php foreach (array_reverse($permohonan) as $key => $izin): ?>
+            <?php foreach (array_reverse($displayData) as $key => $izin): ?>
                 <?php if (!is_array($izin)) continue; ?>
                 <div class="mobile-hist-card" onclick="showDetail('<?= $key ?>')">
                     <div class="mobile-hist-header">
@@ -648,7 +804,7 @@ include 'includes/header.php';
 <div id="detail-modal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>📋 Detail Pengajuan</h3>
+            <h3> Detail Pengajuan</h3>
             <button class="modal-close-btn" onclick="closeDetailModal()">
                 <i class="ri-close-line"></i>
             </button>
@@ -730,7 +886,7 @@ function showDetail(key) {
     if (data.catatan_admin) {
         html += `
             <div class="field-full note-box">
-                <div class="label">📝 Catatan Admin</div>
+                <div class="label"> Catatan Admin</div>
                 <div class="text">${data.catatan_admin}</div>
             </div>
         `;
