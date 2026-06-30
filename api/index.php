@@ -3,11 +3,11 @@
  * =====================================================
  * FILE: api/index.php
  * FUNGSI: Router untuk Vercel
- * VERSION: 4.0 - Fix Session
+ * VERSION: 5.0 - Full Fix
  * =====================================================
  */
 
-// 🔥 START SESSION DI AWAL
+// 🔥 START SESSION - HANYA SEKALI
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -16,10 +16,6 @@ if (session_status() === PHP_SESSION_NONE) {
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $path = parse_url($requestUri, PHP_URL_PATH);
 $path = ltrim($path, '/');
-
-// 🔥 Debug: Cek session (hapus nanti)
-// error_log('Session: ' . print_r($_SESSION, true));
-// error_log('Path: ' . $path);
 
 // 🔥 Jika path kosong, arahkan ke login
 if (empty($path)) {
@@ -53,12 +49,14 @@ if (strpos($path, 'assets/') === 0) {
     }
 }
 
-// 🔥 Cek apakah user sudah login (kecuali untuk login page)
-$isLoginPage = $path === 'login' || $path === 'login.php' || $path === 'auth/login' || $path === 'auth/login.php';
-$isLogoutPage = $path === 'logout' || $path === 'logout.php' || $path === 'auth/logout' || $path === 'auth/logout.php';
+// 🔥 Cek apakah ini halaman login/logout (tanpa session check)
+$isAuthPage = $path === 'login' || $path === 'login.php' || 
+              $path === 'auth/login' || $path === 'auth/login.php' ||
+              $path === 'logout' || $path === 'logout.php' ||
+              $path === 'auth/logout' || $path === 'auth/logout.php';
 
-// 🔥 Jika belum login dan bukan login page, redirect ke login
-if (!$isLoginPage && !$isLogoutPage && empty($_SESSION['uid'])) {
+// 🔥 Jika belum login dan bukan auth page, redirect ke login
+if (!$isAuthPage && empty($_SESSION['uid']) && empty($_COOKIE['uid'])) {
     header('Location: /login');
     exit;
 }
@@ -124,9 +122,9 @@ if (isset($fileMap[$path])) {
     exit;
 }
 
-// 🔥 Cek apakah file ada langsung di root
+// 🔥 Jika path adalah file langsung di root
 $rootFile = __DIR__ . '/../' . $path;
-if (file_exists($rootFile) && is_file($rootFile)) {
+if (file_exists($rootFile) && is_file($rootFile) && strpos($path, '.php') !== false) {
     require_once $rootFile;
     exit;
 }
