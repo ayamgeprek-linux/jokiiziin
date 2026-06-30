@@ -2,8 +2,8 @@
 /**
  * =====================================================
  * FILE: includes/auth.php
- * FUNGSI: Manajemen autentikasi dengan REST API
- * VERSION: 4.0 - REST API Compatible
+ * FUNGSI: Autentikasi dengan Firebase + Cookie Session
+ * VERSION: 2.0 - Fix Vercel Session
  * =====================================================
  */
 
@@ -12,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../config/firebase.php';
+require_once __DIR__ . '/functions.php';
 
 class AuthManager {
     private $auth;
@@ -27,32 +28,33 @@ class AuthManager {
     }
 
     /**
-     * Login user menggunakan email dan password
+     * 🔥 LOGIN - Simpan session + cookie
      */
     public function login($email, $password) {
         try {
-            // 🔥 REST API Auth
             $user = $this->auth->signInWithEmailAndPassword($email, $password);
             
-            // 🔥 Ambil UID dari REST API response
-            // REST API mengembalikan object dengan property 'firebaseUserId' atau 'uid'
-            if (isset($user->firebaseUserId)) {
-                $uid = $user->firebaseUserId;
-            } elseif (isset($user->uid)) {
+            // Ambil UID
+            if (isset($user->uid)) {
                 $uid = $user->uid;
+            } elseif (isset($user->firebaseUserId)) {
+                $uid = $user->firebaseUserId;
             } elseif (property_exists($user, 'localId')) {
                 $uid = $user->localId;
             } else {
                 throw new Exception('UID tidak ditemukan');
             }
             
-            // Ambil data user dari Realtime Database
+            // Simpan ID Token
+            if (isset($user->idToken)) {
+                $_SESSION['idToken'] = $user->idToken;
+            }
+            
             $userData = $this->database
                 ->getReference('users/' . $uid)
                 ->getValue();
             
-            if (!$userData) {
-                // Jika user belum ada di database, buat baru
+            if (!$userData || !is_array($userData)) {
                 $userData = [
                     'name' => $user->displayName ?? explode('@', $email)[0],
                     'email' => $email,
@@ -65,10 +67,16 @@ class AuthManager {
                     ->set($userData);
             }
             
-            // Simpan session
+            // 🔥 SESSION
             $_SESSION['uid'] = $uid;
             $_SESSION['user'] = $userData;
             $_SESSION['user_email'] = $email;
+            $_SESSION['login_time'] = time();
+            
+            // 🔥 COOKIE (agar session tetap hidup di Vercel)
+            setcookie('uid', $uid, time() + 86400 * 7, '/', '', false, true);
+            setcookie('user_email', $email, time() + 86400 * 7, '/', '', false, true);
+            setcookie('user_data', json_encode($userData), time() + 86400 * 7, '/', '', false, true);
             
             return $userData;
             
@@ -79,7 +87,91 @@ class AuthManager {
     }
 
     /**
-     * Register user baru
+     * 🔥 CEK LOGIN - Session + Cookie fallback
+     */
+    public function isLoggedIn() {
+        // Cek session dulu
+        if (isset($_SESSION['uid']) && !empty($_SESSION['uid'])) {
+            return true;
+        }
+        
+        // 🔥 FALLBACK: Cek cookie
+        if (isset($_COOKIE['uid']) && !empty($_COOKIE['uid'])) {
+            // Restore session dari cookie
+            $_SESSION['uid'] = $_COOKIE['uid'];
+            
+            if (isset($_COOKIE['user_data'])) {
+                $_SESSION['user'] = json_decode($_COOKIE['user_data'], true);
+            }
+            if (isset($_COOKIE['user_email'])) {
+                $_SESSION['user_email'] = $_COOKIE['user_email'];
+            }
+            
+            // 🔥 Refresh data user dari database
+            try {
+                $userData = $this->database
+                    ->getReference('users/' . $_SESSION['uid'])
+                    ->getValue();
+                if ($userData && is_array($userData)) {
+                    $_SESSION['user'] = $userData;
+                    setcookie('user_data', json_encode($userData), time() + 86400 * 7, '/', '', false, true);
+                }
+            } catch (Exception $e) {
+                // Jika gagal, biarkan session dari cookie
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * GET CURRENT USER
+     */
+    public function getCurrentUser() {
+        if ($this->isLoggedIn()) {
+            return $_SESSION['user'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * GET CURRENT UID
+     */
+    public function getCurrentUid() {
+        if ($this->isLoggedIn()) {
+            return $_SESSION['uid'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * CEK ADMIN
+     */
+    public function isAdmin() {
+        $user = $this->getCurrentUser();
+        return $user && isset($user['role']) && $user['role'] === 'admin';
+    }
+
+    /**
+     * LOGOUT - Hapus semua session dan cookie
+     */
+    public function logout() {
+        // Hapus session
+        session_destroy();
+        
+        // Hapus cookie
+        setcookie('uid', '', time() - 3600, '/');
+        setcookie('user_email', '', time() - 3600, '/');
+        setcookie('user_data', '', time() - 3600, '/');
+        
+        header('Location: ../auth/login.php');
+        exit;
+    }
+
+    /**
+     * 🔥 REGISTER
      */
     public function register($email, $password, $name, $nip, $jabatan, $departemen) {
         try {
@@ -87,21 +179,18 @@ class AuthManager {
                 return 'Kata sandi minimal 6 karakter';
             }
             
-            // 🔥 REST API Register
             $user = $this->auth->createUserWithEmailAndPassword($email, $password);
             
-            // 🔥 Ambil UID
-            if (isset($user->firebaseUserId)) {
-                $uid = $user->firebaseUserId;
-            } elseif (isset($user->uid)) {
+            if (isset($user->uid)) {
                 $uid = $user->uid;
+            } elseif (isset($user->firebaseUserId)) {
+                $uid = $user->firebaseUserId;
             } elseif (property_exists($user, 'localId')) {
                 $uid = $user->localId;
             } else {
                 $uid = 'user_' . rand(1000, 9999);
             }
             
-            // Data user
             $userData = [
                 'name' => $name,
                 'email' => $email,
@@ -115,7 +204,6 @@ class AuthManager {
                 'updated_at' => date('Y-m-d H:i:s')
             ];
             
-            // 🔥 Simpan ke Realtime Database via REST API
             $this->database
                 ->getReference('users/' . $uid)
                 ->set($userData);
@@ -126,49 +214,7 @@ class AuthManager {
             return 'Registrasi gagal: ' . $e->getMessage();
         }
     }
-
-    /**
-     * Cek apakah user sudah login
-     */
-    public function isLoggedIn() {
-        return isset($_SESSION['uid']) && !empty($_SESSION['uid']);
-    }
-
-    /**
-     * Mendapatkan data user yang sedang login
-     */
-    public function getCurrentUser() {
-        if (!$this->isLoggedIn()) {
-            return null;
-        }
-        return $_SESSION['user'] ?? null;
-    }
-
-    /**
-     * Mendapatkan UID user yang sedang login
-     */
-    public function getCurrentUid() {
-        return $_SESSION['uid'] ?? null;
-    }
-
-    /**
-     * Cek apakah user adalah admin
-     */
-    public function isAdmin() {
-        $user = $this->getCurrentUser();
-        return $user && isset($user['role']) && $user['role'] === 'admin';
-    }
-
-    /**
-     * Logout user
-     */
-    public function logout() {
-        session_destroy();
-        header('Location: login.php');
-        exit;
-    }
 }
 
-// Inisialisasi AuthManager
 $auth = new AuthManager();
 ?>
