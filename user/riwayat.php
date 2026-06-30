@@ -418,17 +418,6 @@ include __DIR__ . '/../includes/header.php';
      MOBILE VIEW
      ===================================================== -->
 <div id="mobile-history-view">
-    <div class="mobile-riwayat-header">
-        <div>
-            <h2>Riwayat</h2>
-            <div class="sub-info">Sisa: <strong><?= $sisaCuti ?></strong> hari</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-            <div style="width:32px;height:32px;border-radius:50%;background:#B8860B;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;cursor:pointer;" onclick="window.location.href='../user/profile.php'">
-                <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
-            </div>
-        </div>
-    </div>
 
     <div class="filter-date-container" style="margin:0 12px 14px;">
         <form method="GET" action="" style="display:flex;flex-direction:column;gap:6px;width:100%;">
