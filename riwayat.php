@@ -689,13 +689,7 @@ include 'includes/header.php';
             <h2> Riwayat Cuti</h2>
             <div class="sub-info">Sisa cuti: <strong><?= $sisaCuti ?></strong> hari</div>
         </div>
-        <div class="avatar-wrapper">
-            <div class="notif-btn" onclick="showToast('Tidak ada notifikasi baru')">
-                <i class="ri-notification-3-line"></i>
-            </div>
-            <div class="avatar-small" onclick="window.location.href='profile.php'">
-                <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
-            </div>
+       
         </div>
     </div>
 
@@ -780,21 +774,7 @@ include 'includes/header.php';
         <?php endif; ?>
     </div>
 
-    <div class="mobile-help-card">
-        <div style="width:44px;height:44px;background:var(--clr-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--clr-primary);margin:0 auto 10px;">
-            <i class="ri-question-line"></i>
-        </div>
-        <h4 style="font-weight:700;font-size:15px;margin-bottom:4px;">Butuh bantuan?</h4>
-        <p style="font-size:12px;color:var(--clr-muted);margin-bottom:14px;line-height:1.5;">Tim HRD siap membantu Anda</p>
-        <button class="btn btn-gold btn-full" style="margin-bottom:8px;font-size:13px;padding:10px;" onclick="showToast('Menghubungi HRD...')">
-            <i class="ri-customer-service-2-line"></i> Chat HRD
-        </button>
-        <button class="btn btn-outline btn-full" style="font-size:13px;padding:10px;" onclick="showToast('Membuka panduan...')">
-            <i class="ri-file-text-line"></i> Baca Panduan
-        </button>
-    </div>
-
-    <div class="mobile-footer-txt">Magang.usg &copy; <?= date('Y') ?></div>
+    
 
 </div>
 
@@ -820,7 +800,6 @@ include 'includes/header.php';
      ===================================================== -->
 <nav class="mobile-nav-bar">
     <button class="mobile-nav-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
-    <button class="mobile-nav-item" onclick="window.location.href='home.php#ajukan-cuti-mobile'"><i class="ri-add-circle-line"></i>Ajukan</button>
     <button class="mobile-nav-item active"><i class="ri-history-line"></i>Riwayat</button>
     <button class="mobile-nav-item" onclick="window.location.href='profile.php'"><i class="ri-user-line"></i>Profil</button>
 </nav>

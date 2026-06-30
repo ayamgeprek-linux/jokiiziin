@@ -187,6 +187,7 @@ include 'includes/header.php';
             <div class="section-card-header">
                 <div><h3>Daftar Pengajuan Menunggu</h3><p>Membutuhkan tindakan verifikasi segera</p></div>
             </div>
+            <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
             <table class="data-table">
                 <thead><tr><th>Pemohon</th><th>Jenis Cuti</th><th>Tanggal</th><th>Durasi</th><th>Aksi</th></tr></thead>
                 <tbody>
@@ -212,7 +213,7 @@ include 'includes/header.php';
                 </tbody>
             </table>
         </div>
-
+</div>
         <!-- =====================================================
              SECTION 2: KELOLA USER - TAMBAH SISA CUTI
              ===================================================== -->
@@ -265,6 +266,7 @@ include 'includes/header.php';
                         <p>Semua karyawan dan sisa cuti mereka</p>
                     </div>
                 </div>
+                <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -296,7 +298,7 @@ include 'includes/header.php';
                 </table>
             </div>
         </div>
-
+</div>
        
     </main>
 </div>

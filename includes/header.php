@@ -3,11 +3,10 @@
  * =====================================================
  * FILE: includes/header.php
  * FUNGSI: Header/Topbar untuk semua halaman
- * VERSION: FINAL - Fixed $uid
+ * VERSION: FINAL - Mobile Fix
  * =====================================================
  */
 
-// Pastikan user sudah login
 if (!isset($user)) {
     $user = $_SESSION['user'] ?? null;
 }
@@ -16,7 +15,6 @@ if (!isset($currentPage)) {
     $currentPage = 'home';
 }
 
-// 🔥 FIX: Pastikan $uid ada (untuk notifikasi)
 if (!isset($uid)) {
     $uid = $_SESSION['uid'] ?? null;
 }
@@ -38,17 +36,98 @@ if (isset($database) && isset($uid)) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Magang.usg — Manajemen Cuti Karyawan</title>
     
-    <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
     
     <style>
         /* ============================================
-           NOTIFIKASI DROPDOWN
+           TOPBAR - DESKTOP & MOBILE
            ============================================ */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar-logo {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 16px;
+            color: #1a1a1a;
+            flex-shrink: 0;
+        }
+        .topbar-logo span { color: #B8860B; }
+        
+        .topbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .topbar-nav a {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #888;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .topbar-nav a:hover,
+        .topbar-nav a.active {
+            color: #1a1a1a;
+            background: #f5f5f0;
+        }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .topbar-search {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: #f5f5f0;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 4px 12px;
+        }
+        .topbar-search input {
+            border: none;
+            background: none;
+            font-size: 13px;
+            outline: none;
+            width: 120px;
+        }
+        .admin-mode-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(184,134,11,0.12);
+            color: #B8860B;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(184,134,11,0.2);
+        }
+        .user-info {
+            text-align: right;
+            display: none;
+        }
+        .user-info strong { font-size: 12px; font-weight: 600; display: block; }
+        .user-info small { font-size: 10px; color: #888; }
+        
         .notif-btn-wrapper {
             position: relative;
             display: inline-block;
@@ -59,8 +138,8 @@ if (isset($database) && isset($uid)) {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: var(--clr-bg);
-            border: 1px solid var(--clr-border);
+            background: #f5f5f0;
+            border: 1px solid #e5e5e5;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -69,11 +148,11 @@ if (isset($database) && isset($uid)) {
         }
         .notif-badge {
             position: absolute;
-            top: -4px;
-            right: -4px;
+            top: -2px;
+            right: -2px;
             background: #C0392B;
             color: #fff;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             min-width: 18px;
             height: 18px;
@@ -84,103 +163,108 @@ if (isset($database) && isset($uid)) {
             padding: 0 4px;
             border: 2px solid #fff;
         }
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #B8860B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        /* ============================================
+           NOTIFIKASI DROPDOWN
+           ============================================ */
         .notif-dropdown {
             display: none;
             position: absolute;
-            top: 45px;
+            top: 42px;
             right: 0;
-            width: 360px;
-            max-height: 400px;
+            width: 320px;
+            max-height: 380px;
             overflow-y: auto;
             background: #fff;
-            border-radius: var(--r-lg);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--clr-border);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border: 1px solid #e5e5e5;
             z-index: 1000;
         }
         .notif-dropdown.active {
             display: block !important;
         }
         .notif-dropdown-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--clr-border);
+            padding: 10px 14px;
+            border-bottom: 1px solid #e5e5e5;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             position: sticky;
             top: 0;
             background: #fff;
-            border-radius: var(--r-lg) var(--r-lg) 0 0;
+            border-radius: 12px 12px 0 0;
             z-index: 5;
         }
         .notif-dropdown-header .mark-all {
-            font-size: 12px;
-            color: var(--clr-primary);
+            font-size: 11px;
+            color: #B8860B;
             cursor: pointer;
-            font-weight: 500;
-        }
-        .notif-dropdown-header .mark-all:hover {
-            text-decoration: underline;
         }
         .notif-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--clr-border);
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
-            transition: background .2s;
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            transition: background 0.2s;
         }
-        .notif-item:hover {
-            background: var(--clr-bg);
-        }
-        .notif-item.unread {
-            background: rgba(184,134,11,.05);
-            border-left: 3px solid var(--clr-primary);
-        }
+        .notif-item:hover { background: #f8f8f8; }
+        .notif-item.unread { background: rgba(184,134,11,0.04); border-left: 3px solid #B8860B; }
         .notif-item .notif-icon {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 14px;
+            font-size: 12px;
         }
-        .notif-item .notif-icon.success { background: var(--clr-success-bg); color: var(--clr-success); }
-        .notif-item .notif-icon.warning { background: var(--clr-warning-bg); color: var(--clr-primary); }
-        .notif-item .notif-icon.danger { background: var(--clr-danger-bg); color: var(--clr-danger); }
-        .notif-item .notif-icon.info { background: var(--clr-bg); color: var(--clr-muted); }
-        .notif-item .notif-body { flex: 1; }
+        .notif-item .notif-icon.success { background: #E8F5EE; color: #2D7A4F; }
+        .notif-item .notif-icon.warning { background: #FEF9E7; color: #B8860B; }
+        .notif-item .notif-icon.danger { background: #FDECEA; color: #C0392B; }
+        .notif-item .notif-icon.info { background: #f5f5f0; color: #888; }
+        .notif-item .notif-body { flex: 1; min-width: 0; }
         .notif-item .notif-body .notif-judul {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .notif-item .notif-body .notif-pesan {
-            font-size: 12px;
-            color: var(--clr-muted);
-            line-height: 1.4;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.3;
+            word-wrap: break-word;
         }
         .notif-item .notif-body .notif-waktu {
             font-size: 10px;
-            color: var(--clr-muted);
-            margin-top: 4px;
+            color: #aaa;
+            margin-top: 2px;
         }
         .notif-empty {
             padding: 30px 20px;
             text-align: center;
-            color: var(--clr-muted);
+            color: #888;
         }
-        .notif-empty i {
-            font-size: 36px;
-            display: block;
-            margin-bottom: 8px;
-            color: var(--clr-border);
-        }
+        .notif-empty i { font-size: 32px; display: block; margin-bottom: 8px; color: #ddd; }
         
         /* ============================================
            MOBILE NAVBAR
@@ -192,7 +276,7 @@ if (isset($database) && isset($uid)) {
             left: 0;
             right: 0;
             background: #fff;
-            border-top: 1px solid var(--clr-border);
+            border-top: 1px solid #e5e5e5;
             z-index: 200;
             padding: 4px 0 env(safe-area-inset-bottom);
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
@@ -203,58 +287,80 @@ if (isset($database) && isset($uid)) {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
-            padding: 8px 4px;
-            font-size: 9px;
+            gap: 1px;
+            padding: 6px 2px;
+            font-size: 8px;
             font-weight: 600;
-            color: var(--clr-muted);
+            color: #888;
             cursor: pointer;
             border: none;
             background: none;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
-            transition: color .2s;
+            letter-spacing: 0.2px;
+            transition: color 0.2s;
             position: relative;
         }
         .mobile-nav-bar .mobile-nav-item i {
-            font-size: 20px;
-            transition: color .2s;
+            font-size: 18px;
+            transition: color 0.2s;
         }
         .mobile-nav-bar .mobile-nav-item.active {
-            color: var(--clr-dark);
+            color: #1a1a1a;
         }
         .mobile-nav-bar .mobile-nav-item.active i {
-            color: var(--clr-primary);
+            color: #B8860B;
         }
         .mobile-nav-bar .mobile-nav-item .nav-badge {
             position: absolute;
             top: 2px;
             right: 50%;
-            transform: translateX(20px);
+            transform: translateX(18px);
             background: #C0392B;
             color: #fff;
-            font-size: 8px;
+            font-size: 7px;
             font-weight: 700;
-            min-width: 16px;
-            height: 16px;
+            min-width: 14px;
+            height: 14px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
+            padding: 0 3px;
         }
 
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (min-width: 769px) {
+            .mobile-nav-bar { display: none !important; }
+            .topbar-search { display: flex; }
+            .user-info { display: block; }
+        }
+        
         @media (max-width: 768px) {
+            .topbar { padding: 0 12px; height: 50px; }
+            .topbar-logo { font-size: 14px; }
+            .topbar-nav { display: none !important; }
+            .topbar-search { display: none !important; }
+            .user-info { display: none !important; }
+            .admin-mode-badge { font-size: 10px; padding: 2px 8px; }
+            .notif-btn { width: 32px; height: 32px; font-size: 14px; }
+            .topbar-avatar { width: 28px; height: 28px; font-size: 10px; }
+            .notif-dropdown { width: 280px; right: -40px; }
+            
             .mobile-nav-bar {
                 display: flex !important;
             }
             .page-with-mobile-nav .main-content {
-                padding-bottom: 80px !important;
+                padding-bottom: 72px !important;
             }
-            .notif-dropdown {
-                width: 300px;
-                right: -60px;
-            }
+        }
+        
+        @media (max-width: 400px) {
+            .notif-dropdown { width: 240px; right: -20px; }
+            .notif-item { padding: 8px 10px; }
+            .notif-item .notif-body .notif-judul { font-size: 11px; }
+            .notif-item .notif-body .notif-pesan { font-size: 10px; }
         }
     </style>
 </head>
@@ -267,36 +373,31 @@ if (isset($database) && isset($uid)) {
     <div class="topbar-logo">Magang<span>.usg</span></div>
     
     <?php if ($isAdmin): ?>
-    <!-- Navbar Admin -->
     <nav class="topbar-nav">
-        <a href="admin.php" class="<?= $currentPage === 'admin' ? 'active' : '' ?>">Dashboard</a>
+        <a href="admin.php" class="<?= $currentPage === 'admin' ? 'active' : '' ?>">Review</a>
         <a href="admin_riwayat.php" class="<?= $currentPage === 'admin-riwayat' ? 'active' : '' ?>">Riwayat</a>
         <a href="admin_laporan.php" class="<?= $currentPage === 'admin-laporan' ? 'active' : '' ?>">Laporan</a>
     </nav>
     <?php else: ?>
-    <!-- Navbar User -->
     <nav class="topbar-nav">
         <a href="home.php" class="<?= $currentPage === 'home' ? 'active' : '' ?>">Dashboard</a>
-        <a href="home.php#ajukan-cuti" class="<?= $currentPage === 'ajukan' ? 'active' : '' ?>">Ajukan Cuti</a>
+        <a href="home.php#ajukan-cuti" class="<?= $currentPage === 'ajukan' ? 'active' : '' ?>">Ajukan</a>
         <a href="riwayat.php" class="<?= $currentPage === 'riwayat' ? 'active' : '' ?>">Riwayat</a>
     </nav>
     <?php endif; ?>
     
     <div class="topbar-right">
-        <!-- Search -->
         <div class="topbar-search">
-            <i class="ri-search-line" style="color:var(--clr-muted);"></i>
+            <i class="ri-search-line" style="color:#888;font-size:14px;"></i>
             <input type="text" placeholder="Cari...">
         </div>
         
-        <!-- Admin Badge -->
         <?php if ($isAdmin): ?>
         <div class="admin-mode-badge">
             <i class="ri-settings-3-line"></i> Admin
         </div>
         <?php endif; ?>
         
-        <!-- 🔥 NOTIFIKASI -->
         <div class="notif-btn-wrapper">
             <button class="notif-btn" id="notifToggle" onclick="toggleNotif()">
                 <i class="ri-notification-3-line"></i>
@@ -307,9 +408,9 @@ if (isset($database) && isset($uid)) {
             
             <div class="notif-dropdown" id="notifDropdown">
                 <div class="notif-dropdown-header">
-                    <span>🔔 Notifikasi</span>
+                    <span>Notifikasi</span>
                     <?php if (!empty($recentNotif)): ?>
-                        <span class="mark-all" onclick="markAllNotif()">Tandai semua sudah dibaca</span>
+                        <span class="mark-all" onclick="markAllNotif()">Tandai semua dibaca</span>
                     <?php endif; ?>
                 </div>
                 
@@ -337,13 +438,11 @@ if (isset($database) && isset($uid)) {
             </div>
         </div>
         
-        <!-- User Info -->
         <div class="user-info">
             <strong><?= escape($user['name'] ?? 'User') ?></strong>
             <small><?= escape($user['jabatan'] ?? 'Karyawan') ?></small>
         </div>
         
-        <!-- Avatar → Profil -->
         <div class="topbar-avatar" onclick="window.location.href='profile.php'">
             <?= strtoupper(substr($user['name'] ?? 'U', 0, 2)) ?>
         </div>
@@ -351,11 +450,10 @@ if (isset($database) && isset($uid)) {
 </header>
 
 <!-- =====================================================
-     🔥 MOBILE NAVBAR - FULLY FUNCTIONAL
+     MOBILE NAVBAR
      ===================================================== -->
 <nav class="mobile-nav-bar">
     <?php if ($isAdmin): ?>
-        <!-- Admin Mobile Nav -->
         <button class="mobile-nav-item <?= $currentPage === 'admin' ? 'active' : '' ?>" onclick="window.location.href='admin.php'">
             <i class="ri-file-search-line"></i>
             <span>Review</span>
@@ -368,7 +466,7 @@ if (isset($database) && isset($uid)) {
             <i class="ri-file-chart-line"></i>
             <span>Laporan</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.location.href='profile.php'">
+        <button class="mobile-nav-item <?= $currentPage === 'profile' ? 'active' : '' ?>" onclick="window.location.href='profile.php'">
             <i class="ri-user-line"></i>
             <span>Profil</span>
         </button>
@@ -377,7 +475,6 @@ if (isset($database) && isset($uid)) {
             <span>Keluar</span>
         </button>
     <?php else: ?>
-        <!-- User Mobile Nav -->
         <button class="mobile-nav-item <?= $currentPage === 'home' ? 'active' : '' ?>" onclick="window.location.href='home.php'">
             <i class="ri-dashboard-line"></i>
             <span>Dashboard</span>
@@ -405,65 +502,38 @@ if (isset($database) && isset($uid)) {
 </nav>
 
 <!-- =====================================================
-     🔥 NOTIFIKASI SCRIPT
+     NOTIFIKASI SCRIPT
      ===================================================== -->
 <script>
-// Toggle dropdown notifikasi
 function toggleNotif() {
     const dropdown = document.getElementById('notifDropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('active');
-    }
+    if (dropdown) dropdown.classList.toggle('active');
 }
 
-// Tutup dropdown jika klik di luar
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.notif-btn-wrapper');
     if (wrapper && !wrapper.contains(e.target)) {
         const dropdown = document.getElementById('notifDropdown');
-        if (dropdown) {
-            dropdown.classList.remove('active');
-        }
+        if (dropdown) dropdown.classList.remove('active');
     }
 });
 
-// Klik notifikasi
 function clickNotif(id, link) {
     fetch('ajax_mark_read.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'id=' + id
     })
-    .then(response => response.json())
-    .then(data => {
-        if (link && link !== '#') {
-            window.location.href = link;
-        } else {
-            location.reload();
-        }
-    })
-    .catch(() => {
-        if (link && link !== '#') {
-            window.location.href = link;
-        }
-    });
+    .then(() => { if (link && link !== '#') window.location.href = link; else location.reload(); })
+    .catch(() => { if (link && link !== '#') window.location.href = link; });
 }
 
-// Tandai semua notifikasi sudah dibaca
 function markAllNotif() {
-    fetch('ajax_mark_all_read.php', {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        location.reload();
-    })
-    .catch(() => {
-        location.reload();
-    });
+    fetch('ajax_mark_all_read.php', { method: 'POST' })
+    .then(() => location.reload())
+    .catch(() => location.reload());
 }
 
-// Auto refresh notifikasi setiap 30 detik
 setInterval(function() {
     fetch('ajax_get_notif_count.php')
     .then(response => response.json())

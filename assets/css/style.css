@@ -724,7 +724,6 @@ img { max-width: 100%; }
   overflow: hidden;
 }
 .dashboard-hero::after {
-  content: 'Cuti';
   position: absolute;
   right: -20px;
   bottom: -20px;

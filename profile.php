@@ -202,7 +202,6 @@ include 'includes/header.php';
     <?php else: ?>
         <!-- User Mobile -->
         <button class="mobile-nav-item" onclick="window.location.href='home.php'"><i class="ri-dashboard-line"></i>Dashboard</button>
-        <button class="mobile-nav-item" onclick="window.location.href='home.php#ajukan-cuti'"><i class="ri-add-circle-line"></i>Ajukan</button>
         <button class="mobile-nav-item" onclick="window.location.href='riwayat.php'"><i class="ri-history-line"></i>Riwayat</button>
         <button class="mobile-nav-item active"><i class="ri-user-line"></i>Profil</button>
         <button class="mobile-nav-item" onclick="window.location.href='logout.php'"><i class="ri-logout-box-line"></i>Keluar</button>
