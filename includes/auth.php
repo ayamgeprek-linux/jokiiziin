@@ -2,17 +2,15 @@
 /**
  * =====================================================
  * FILE: includes/auth.php
- * FUNGSI: Autentikasi dengan Firebase + Cookie Session
- * VERSION: 2.0 - Fix Vercel Session
+ * FUNGSI: Autentikasi dengan Firebase
+ * VERSION: FINAL
  * =====================================================
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// 🔥 JANGAN PANGGIL session_start() DI SINI!
+// Session sudah di-start di api/index.php
 
 require_once __DIR__ . '/../config/firebase.php';
-require_once __DIR__ . '/functions.php';
 
 class AuthManager {
     private $auth;
@@ -27,14 +25,10 @@ class AuthManager {
         }
     }
 
-    /**
-     * 🔥 LOGIN - Simpan session + cookie
-     */
     public function login($email, $password) {
         try {
             $user = $this->auth->signInWithEmailAndPassword($email, $password);
             
-            // Ambil UID
             if (isset($user->uid)) {
                 $uid = $user->uid;
             } elseif (isset($user->firebaseUserId)) {
@@ -45,7 +39,6 @@ class AuthManager {
                 throw new Exception('UID tidak ditemukan');
             }
             
-            // Simpan ID Token
             if (isset($user->idToken)) {
                 $_SESSION['idToken'] = $user->idToken;
             }
@@ -67,13 +60,11 @@ class AuthManager {
                     ->set($userData);
             }
             
-            // 🔥 SESSION
             $_SESSION['uid'] = $uid;
             $_SESSION['user'] = $userData;
             $_SESSION['user_email'] = $email;
-            $_SESSION['login_time'] = time();
             
-            // 🔥 COOKIE (agar session tetap hidup di Vercel)
+            // Cookie fallback untuk Vercel
             setcookie('uid', $uid, time() + 86400 * 7, '/', '', false, true);
             setcookie('user_email', $email, time() + 86400 * 7, '/', '', false, true);
             setcookie('user_data', json_encode($userData), time() + 86400 * 7, '/', '', false, true);
@@ -86,93 +77,39 @@ class AuthManager {
         }
     }
 
-    /**
-     * 🔥 CEK LOGIN - Session + Cookie fallback
-     */
     public function isLoggedIn() {
-        // Cek session dulu
         if (isset($_SESSION['uid']) && !empty($_SESSION['uid'])) {
             return true;
         }
         
         // 🔥 FALLBACK: Cek cookie
         if (isset($_COOKIE['uid']) && !empty($_COOKIE['uid'])) {
-            // Restore session dari cookie
             $_SESSION['uid'] = $_COOKIE['uid'];
-            
             if (isset($_COOKIE['user_data'])) {
                 $_SESSION['user'] = json_decode($_COOKIE['user_data'], true);
             }
             if (isset($_COOKIE['user_email'])) {
                 $_SESSION['user_email'] = $_COOKIE['user_email'];
             }
-            
-            // 🔥 Refresh data user dari database
-            try {
-                $userData = $this->database
-                    ->getReference('users/' . $_SESSION['uid'])
-                    ->getValue();
-                if ($userData && is_array($userData)) {
-                    $_SESSION['user'] = $userData;
-                    setcookie('user_data', json_encode($userData), time() + 86400 * 7, '/', '', false, true);
-                }
-            } catch (Exception $e) {
-                // Jika gagal, biarkan session dari cookie
-            }
-            
             return true;
         }
         
         return false;
     }
 
-    /**
-     * GET CURRENT USER
-     */
     public function getCurrentUser() {
-        if ($this->isLoggedIn()) {
-            return $_SESSION['user'] ?? null;
-        }
-        return null;
+        return $_SESSION['user'] ?? null;
     }
 
-    /**
-     * GET CURRENT UID
-     */
     public function getCurrentUid() {
-        if ($this->isLoggedIn()) {
-            return $_SESSION['uid'] ?? null;
-        }
-        return null;
+        return $_SESSION['uid'] ?? null;
     }
 
-    /**
-     * CEK ADMIN
-     */
     public function isAdmin() {
         $user = $this->getCurrentUser();
         return $user && isset($user['role']) && $user['role'] === 'admin';
     }
 
-    /**
-     * LOGOUT - Hapus semua session dan cookie
-     */
-    public function logout() {
-        // Hapus session
-        session_destroy();
-        
-        // Hapus cookie
-        setcookie('uid', '', time() - 3600, '/');
-        setcookie('user_email', '', time() - 3600, '/');
-        setcookie('user_data', '', time() - 3600, '/');
-        
-        header('Location: ../auth/login.php');
-        exit;
-    }
-
-    /**
-     * 🔥 REGISTER
-     */
     public function register($email, $password, $name, $nip, $jabatan, $departemen) {
         try {
             if (strlen($password) < 6) {
