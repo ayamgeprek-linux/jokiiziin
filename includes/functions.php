@@ -3,9 +3,11 @@
  * =====================================================
  * FILE: includes/functions.php
  * FUNGSI: Helper functions
- * VERSION: FINAL
+ * VERSION: FINAL - Fix header error
  * =====================================================
  */
+
+// 🔥 JANGAN ADA ECHO/OUTPUT DI ATAS FUNGSI INI!
 
 function showToast($message, $type = 'info') {
     $icon = 'ri-information-line';
@@ -116,18 +118,33 @@ function generateCutiId() {
     return 'CUT-' . date('Y') . '-' . strtoupper(substr(uniqid(), -4));
 }
 
+/**
+ * 🔥 REDIRECT - Pastikan tidak ada output sebelumnya
+ */
 function redirect($url) {
-    header('Location: ' . $url);
-    exit;
+    // 🔥 Cek jika header sudah dikirim
+    if (!headers_sent()) {
+        header('Location: ' . $url);
+        exit;
+    } else {
+        // Fallback jika header sudah terkirim
+        echo '<script>window.location.href="' . $url . '";</script>';
+        echo '<noscript><meta http-equiv="refresh" content="0;url=' . $url . '"></noscript>';
+        exit;
+    }
 }
 
 function requireLogin($auth) {
-    if (!$auth->isLoggedIn()) redirect('login.php');
+    if (!$auth->isLoggedIn()) {
+        redirect('../auth/login.php');
+    }
 }
 
 function requireAdmin($auth) {
     requireLogin($auth);
-    if (!$auth->isAdmin()) redirect('home.php');
+    if (!$auth->isAdmin()) {
+        redirect('../user/index.php');
+    }
 }
 
 function escape($string) {
@@ -137,9 +154,15 @@ function escape($string) {
 function base_url($path = '') {
     $host = $_SERVER['HTTP_HOST'] ?? '';
     $isLocal = strpos($host, 'localhost') !== false || 
-               strpos($host, '127.0.0.1') !== false;
+               strpos($host, '127.0.0.1') !== false ||
+               strpos($host, '192.168.') !== false;
     
-    $base = $isLocal ? '/izin' : '';
+    if ($isLocal) {
+        $base = '/izin';
+    } else {
+        $base = '';
+    }
+    
     $path = ltrim($path, '/');
     return $base . '/' . $path;
 }
